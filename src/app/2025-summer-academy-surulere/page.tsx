@@ -175,7 +175,17 @@ export default function Page() {
   }, []);
 
   return (
-    <main className="text-white space-y-4">
+    <>
+    <noscript>
+        <img 
+          height="1" 
+          width="1" 
+          style={{ display: 'none' }}
+          src="https://www.facebook.com/tr?id=776602458123489&ev=PageView&noscript=1"
+          alt=""
+        />
+      </noscript>
+    <div className="text-white space-y-4">
       {/* Floating Urgency Bar */}
       <div className="fixed top-0 left-0 w-full text-white bg-red-500 text-center p-2 z-50 text-sm md:text-base !rounded-none">
         <span className="font-semibold uppercase tracking-wider">
@@ -200,6 +210,7 @@ export default function Page() {
       {/* Ensure FAQ is included after Contact */}
       <FAQ />
       <Footer />
-    </main>
+    </div>
+    </>
   );
 } 

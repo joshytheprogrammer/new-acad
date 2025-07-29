@@ -45,7 +45,7 @@ export const metadata: Metadata = {
 
 export default function AcademyLandingPage() {
   return (
-    <div className="space-y-2 md:space-y-4">
+    <div className="space-y-2 md:space-y-4 px-4 bg-slate-50">
       <AcademyNav />
       <AcademyHero />
       <LandingPreview />

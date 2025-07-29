@@ -2,7 +2,7 @@ import Image from "next/image";
 
 export default function Problem() {
   return (
-    <section className="bg-sand-black py-32 px-4">
+    <section className="bg-sand-black py-32 px-12">
             <div className="max-w-6xl mx-auto text-center">
               <h2 className="font-bebas text-4xl md:text-5xl font-bold tracking-tight leading-snug">
                 While Others Are Building...{" "}

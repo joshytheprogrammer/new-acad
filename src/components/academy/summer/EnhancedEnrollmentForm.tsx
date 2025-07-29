@@ -8,6 +8,7 @@ import {
   generateEventId, 
   getBrowserData, 
   getClientIp, 
+  trackPixelEvent,
   type LeadData 
 } from "@/lib/metaHelpers";
 
@@ -148,9 +149,20 @@ export default function EnhancedEnrollmentForm({
         throw new Error('Failed to store lead data');
       }
       
+      // Fire InitiateCheckout events (both pixel and conversions API)
+      // 1. Frontend Pixel Event
+      trackPixelEvent('InitiateCheckout', {
+        value: 50000,
+        currency: 'NGN',
+        content_name: '2025 Summer Academy - Surulere',
+        content_category: 'Education',
+        content_ids: ['summer-academy-2025'],
+        num_items: 1
+      }, eventId);
+      
       // 2. Backend Conversions API Event (for better tracking)
       try {
-        // Hash the user data 
+        // Hash the user data according to Meta requirements
         const crypto = await import('crypto');
         
         const hashedEmail = crypto

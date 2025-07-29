@@ -243,6 +243,7 @@ export default function EnhancedEnrollmentForm({
                   client_user_agent: leadInfo.userAgent,
                   fbp: leadInfo.fbp,
                   fbc: leadInfo.fbc,
+                  external_id: [hashedEmail],
                 },
                 custom_data: {
                   value: 50000,

@@ -1,15 +1,23 @@
 "use client";
-import LinkButton from "@/components/LinkButton";
 import { useEffect, useState } from "react";
 
 export default function Risk() {
-
     const [timeLeft, setTimeLeft] = useState({
         days: "00",
         hours: "00",
         minutes: "00",
         seconds: "00",
       });
+
+      const scrollToEnrollment = () => {
+        const enrollmentSection = document.getElementById('enrollment');
+        if (enrollmentSection) {
+          enrollmentSection.scrollIntoView({ 
+            behavior: 'smooth',
+            block: 'start'
+          });
+        }
+      };
     
       useEffect(() => {
         const timer = setInterval(() => {
@@ -93,7 +101,7 @@ export default function Risk() {
                 </div>
                 <div className="text-center">
                   <p className="font-bebas text-5xl md:text-7xl text-red-500 font-bold">
-                    {timeLeft.days}
+                    {timeLeft.hours}
                   </p>
                   <p className="text-sm uppercase tracking-wider text-gray-700">Hours</p>
                 </div>
@@ -117,9 +125,12 @@ export default function Risk() {
             
             {/* CTA to scroll to enrollment */}
             <div className="mt-8">
-              <LinkButton href="#enrollment">
+              <button 
+                onClick={scrollToEnrollment}
+                className="inline-block bg-chambray-700 hover:bg-chambray-800 text-white font-bold py-4 px-8 rounded-lg text-xl transition-colors duration-300"
+              >
                 SECURE YOUR SPOT NOW!
-              </LinkButton>
+              </button>
             </div>
             </div>
           </div>

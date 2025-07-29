@@ -1,3 +1,5 @@
+"use client";
+
 import {
   Laptop,
   BookOpen,
@@ -6,10 +8,18 @@ import {
   GraduationCap,
   PartyPopper,
 } from "lucide-react";
-import LinkButton from "@/components/LinkButton";
-
 
 export default function Hero(){
+  const scrollToEnrollment = () => {
+    const enrollmentSection = document.getElementById('enrollment');
+    if (enrollmentSection) {
+      enrollmentSection.scrollIntoView({ 
+        behavior: 'smooth',
+        block: 'start'
+      });
+    }
+  };
+
   return (
      <section
         className="relative flex items-center justify-center text-center p-4 py-32 bg-white overflow-hidden"
@@ -42,9 +52,12 @@ export default function Hero(){
               LESS THAN 30 SLOTS LEFT!
             </span>
           </p>
-          <LinkButton href="#enrollment" className="mt-8">
+          <button 
+            onClick={scrollToEnrollment}
+            className="inline-block bg-chambray-700 hover:bg-chambray-800 text-white font-bold py-4 px-8 rounded-lg text-xl transition-colors duration-300 mt-8"
+          >
             Secure Your Spot Today!
-          </LinkButton>
+          </button>
         </div>
       </section>
   );

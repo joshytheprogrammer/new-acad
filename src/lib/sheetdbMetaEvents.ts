@@ -6,6 +6,7 @@ interface MetaEventData {
     em?: string[];
     ph?: string[];
     fn?: string[];
+    external_id?: string[];
     // Add original data fields
     email?: string;
     phone?: string;
@@ -83,6 +84,7 @@ export async function logMetaEventToSheetDB(eventData: MetaEventData, additional
       user_agent: userData.client_user_agent || '', // User Agent
       facebook_browser_id: userData.fbp || '',     // Facebook Browser ID
       facebook_click_id: userData.fbc || '',       // Facebook Click ID
+      external_id: userData.external_id?.[0] || '', // External ID (hashed email for tracking)
       event_value: customData.value || '',         // Event Value
       currency: customData.currency || '',         // Currency
       content_name: customData.content_name || '', // Content Name

@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import { getAttributionData } from "@/lib/metaHelpers";
 
 // Helper function to hash data using Web Crypto API
 const hashData = async (data: string): Promise<string> => {
@@ -220,39 +221,6 @@ export default function Contact() {
       console.warn('Could not get client IP:', error);
       return '0.0.0.0';
     }
-  };
-
-  const getAttributionData = () => {
-    if (typeof window === 'undefined') {
-      return { 
-        ad_id: null, 
-        adset_id: null, 
-        campaign_id: null,
-        utm_source: null,
-        utm_medium: null,
-        utm_term: null,
-        utm_content: null,
-        utm_campaign: null,
-        fbclid: null,
-        gclid: null,
-      };
-    }
-    
-    const urlParams = new URLSearchParams(window.location.search);
-    
-    return {
-      ad_id: urlParams.get('fbclid') || urlParams.get('gclid') || urlParams.get('ad_id') || null,
-      adset_id: urlParams.get('adset_id') || urlParams.get('adgroupid') || null,
-      campaign_id: urlParams.get('campaign_id') || urlParams.get('campaignid') || urlParams.get('utm_campaign') || null,
-      // Additional attribution data you might want to capture
-      utm_source: urlParams.get('utm_source') || null,
-      utm_medium: urlParams.get('utm_medium') || null,
-      utm_term: urlParams.get('utm_term') || null,
-      utm_content: urlParams.get('utm_content') || null,
-      utm_campaign: urlParams.get('utm_campaign') || null,
-      fbclid: urlParams.get('fbclid') || null,
-      gclid: urlParams.get('gclid') || null,
-    };
   };
 
     return (

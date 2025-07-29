@@ -9,6 +9,7 @@ import {
   getBrowserData, 
   getClientIp, 
   trackPixelEvent,
+  getAttributionData,
   type LeadData 
 } from "@/lib/metaHelpers";
 
@@ -184,6 +185,10 @@ export default function EnhancedEnrollmentForm({
           .update(leadInfo.name.toLowerCase().trim())
           .digest('hex');
 
+        const attributionData = getAttributionData();
+
+        console.log(attributionData.ad_id, attributionData.adset_id, attributionData.campaign_id);
+
         const conversionData = {
           event_name: 'ViewContent',
           event_time: Math.floor(Date.now() / 1000),
@@ -201,9 +206,9 @@ export default function EnhancedEnrollmentForm({
             external_id: [hashedEmail]
           },
           attribution_data: {
-            ad_id: null,
-            adset_id: null,
-            campaign_id: null
+            ad_id: attributionData.ad_id,
+            adset_id: attributionData.adset_id,
+            campaign_id: attributionData.campaign_id,
           },
           custom_data: {
             value: 50000,
@@ -228,6 +233,7 @@ export default function EnhancedEnrollmentForm({
           
           // Log to SheetDB for comprehensive tracking
           try {
+            const attributionData = getAttributionData();
             await fetch('/api/log-meta-event', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
@@ -253,9 +259,13 @@ export default function EnhancedEnrollmentForm({
                 source_info: {
                   page_path: typeof window !== 'undefined' ? window.location.pathname : '',
                   referrer: typeof document !== 'undefined' ? document.referrer : '',
-                  utm_source: typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('utm_source') || '' : '',
-                  utm_medium: typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('utm_medium') || '' : '',
-                  utm_campaign: typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('utm_campaign') || '' : '',
+                  utm_source: attributionData.utm_source || '',
+                  utm_medium: attributionData.utm_medium || '',
+                  utm_campaign: attributionData.utm_campaign || '',
+                  utm_term: attributionData.utm_term || '',
+                  utm_content: attributionData.utm_content || '',
+                  fbclid: attributionData.fbclid || '',
+                  gclid: attributionData.gclid || '',
                 },
                 meta_response: result,
                 additional_data: { 

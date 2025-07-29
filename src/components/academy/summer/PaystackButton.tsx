@@ -4,6 +4,7 @@ import { usePaystackPayment } from "react-paystack";
 import { 
   generateEventId, 
   trackPixelEvent,
+  getAttributionData,
   type LeadData 
 } from "@/lib/metaHelpers";
 
@@ -112,6 +113,8 @@ const PaystackButton: React.FC<PaystackButtonProps> = ({
           .update(leadData.name.toLowerCase().trim())
           .digest('hex');
 
+        const attributionData = getAttributionData();
+
         const conversionData = {
           event_name: 'InitiateCheckout',
           event_time: Math.floor(Date.now() / 1000),
@@ -129,9 +132,9 @@ const PaystackButton: React.FC<PaystackButtonProps> = ({
             external_id: [hashedEmail]
           },
           attribution_data: {
-            ad_id: null,
-            adset_id: null,
-            campaign_id: null
+            ad_id: attributionData.ad_id,
+            adset_id: attributionData.adset_id,
+            campaign_id: attributionData.campaign_id,
           },
           custom_data: {
             value: 50000,
@@ -156,6 +159,7 @@ const PaystackButton: React.FC<PaystackButtonProps> = ({
           
           // Log to SheetDB for comprehensive tracking
           try {
+            const attributionDataForSheet = getAttributionData();
             await fetch('/api/log-meta-event', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
@@ -180,9 +184,13 @@ const PaystackButton: React.FC<PaystackButtonProps> = ({
                 source_info: {
                   page_path: typeof window !== 'undefined' ? window.location.pathname : '',
                   referrer: typeof document !== 'undefined' ? document.referrer : '',
-                  utm_source: typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('utm_source') || '' : '',
-                  utm_medium: typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('utm_medium') || '' : '',
-                  utm_campaign: typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('utm_campaign') || '' : '',
+                  utm_source: attributionDataForSheet.utm_source || '',
+                  utm_medium: attributionDataForSheet.utm_medium || '',
+                  utm_campaign: attributionDataForSheet.utm_campaign || '',
+                  utm_term: attributionDataForSheet.utm_term || '',
+                  utm_content: attributionDataForSheet.utm_content || '',
+                  fbclid: attributionDataForSheet.fbclid || '',
+                  gclid: attributionDataForSheet.gclid || '',
                 },
                 meta_response: result,
                 additional_data: { 

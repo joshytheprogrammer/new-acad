@@ -80,6 +80,41 @@ export function hashStringSync(input: string): string {
 }
 
 /**
+ * Gets attribution data from URL parameters consistently across the app
+ */
+export function getAttributionData() {
+  if (typeof window === 'undefined') {
+    return { 
+      ad_id: null, 
+      adset_id: null, 
+      campaign_id: null,
+      utm_source: null,
+      utm_medium: null,
+      utm_term: null,
+      utm_content: null,
+      utm_campaign: null,
+      fbclid: null,
+      gclid: null,
+    };
+  }
+  
+  const urlParams = new URLSearchParams(window.location.search);
+  
+  return {
+    ad_id: urlParams.get('fbclid') || urlParams.get('gclid') || urlParams.get('ad_id') || null,
+    adset_id: urlParams.get('adset_id') || urlParams.get('adgroupid') || null,
+    campaign_id: urlParams.get('campaign_id') || urlParams.get('campaignid') || urlParams.get('utm_campaign') || null,
+    utm_source: urlParams.get('utm_source') || null,
+    utm_medium: urlParams.get('utm_medium') || null,
+    utm_term: urlParams.get('utm_term') || null,
+    utm_content: urlParams.get('utm_content') || null,
+    utm_campaign: urlParams.get('utm_campaign') || null,
+    fbclid: urlParams.get('fbclid') || null,
+    gclid: urlParams.get('gclid') || null,
+  };
+}
+
+/**
  * Gets browser data for Conversions API
  */
 export function getBrowserData() {

@@ -215,6 +215,10 @@ export async function POST(request: NextRequest) {
                       utm_source: '',
                       utm_medium: '',
                       utm_campaign: '',
+                      utm_term: '',
+                      utm_content: '',
+                      fbclid: '',
+                      gclid: '',
                     },
                     meta_response: metaResult,
                     additional_data: {

@@ -52,6 +52,7 @@ export async function POST(request: NextRequest) {
         try {
           // Search for the InitiateCheckout event in SheetDB to get original user data
           let originalUserData = null;
+          let originalSourceUrl = null;
           
           try {
             const searchResponse = await fetch(`${process.env.SHEETDB_API_URL}/search?event_id=${eventId}&event_name=InitiateCheckout`);
@@ -70,6 +71,8 @@ export async function POST(request: NextRequest) {
                   fbp: initiateCheckoutEvent.facebook_browser_id,
                   fbc: initiateCheckoutEvent.facebook_click_id,
                 };
+                // Get the original source URL if available
+                originalSourceUrl = initiateCheckoutEvent.event_source_url || initiateCheckoutEvent.source_url;
                 console.log('✅ Found original InitiateCheckout user data for Purchase event');
               } else {
                 console.warn('⚠️ No InitiateCheckout event found for eventId:', eventId);
@@ -130,12 +133,15 @@ export async function POST(request: NextRequest) {
           // Only proceed if we have at least email hash
           if (hashedEmail) {
 
+            // Construct the dynamic event_source_url - use original if available, otherwise construct from request
+            const eventSourceUrl = originalSourceUrl || `${request.nextUrl.origin}/2025-summer-academy-surulere`;
+
             const conversionData = {
               event_name: 'Purchase',
               event_time: Math.floor(Date.now() / 1000),
               action_source: 'website',
               event_id: eventId, // Same event_id for deduplication with frontend pixel
-              event_source_url: 'https://academy.wandgroup.com/2025-summer-academy-surulere',
+              event_source_url: eventSourceUrl,
               user_data: {
                 em: [hashedEmail],
                 ...(hashedPhone && { ph: [hashedPhone] }),
@@ -202,7 +208,7 @@ export async function POST(request: NextRequest) {
                       "currency": "NGN",
                       "value": 50000
                     },
-                    event_source_url: 'https://academy.wandgroup.com/2025-summer-academy-surulere',
+                    event_source_url: eventSourceUrl,
                     source_info: {
                       page_path: '/2025-summer-academy-surulere',
                       referrer: '',

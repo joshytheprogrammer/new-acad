@@ -198,9 +198,7 @@ export default function EnhancedEnrollmentForm({
             client_user_agent: leadInfo.userAgent,
             fbp: leadInfo.fbp,
             fbc: leadInfo.fbc,
-            external_id: [
-                    hashedEmail
-                ]
+            external_id: [hashedEmail]
           },
           attribution_data: {
             ad_id: null,

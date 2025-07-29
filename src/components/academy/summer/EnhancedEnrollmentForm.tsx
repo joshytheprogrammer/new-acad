@@ -187,8 +187,6 @@ export default function EnhancedEnrollmentForm({
 
         const attributionData = getAttributionData();
 
-        console.log(attributionData.ad_id, attributionData.adset_id, attributionData.campaign_id);
-
         const conversionData = {
           event_name: 'ViewContent',
           event_time: Math.floor(Date.now() / 1000),

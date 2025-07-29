@@ -1,0 +1,9 @@
+# *
+User-agent: *
+Allow: /
+
+# Host
+Host: https://academy.wandggroup.com
+
+# Sitemaps
+Sitemap: https://academy.wandggroup.com/sitemap.xml

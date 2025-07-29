@@ -317,7 +317,7 @@ export default function EnhancedEnrollmentForm({
         }
         
         // Redirect to success page with event ID for deduplication
-        window.location.href = `/success?event_id=${currentEventId}&ref=${reference.reference}`;
+        window.location.href = `/2025-summer-academy-surulere/success?event_id=${currentEventId}&ref=${reference.reference}`;
       } else {
         toast.dismiss();
         toast.error("Payment verification failed. Please contact support.");

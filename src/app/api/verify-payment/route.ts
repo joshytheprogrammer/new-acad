@@ -188,7 +188,7 @@ export async function POST(request: NextRequest) {
                     event_name: 'Purchase',
                     event_id: eventId,
                     event_time: Math.floor(Date.now() / 1000),
-                    test_event_code: 'TEST92428', 
+                    // test_event_code: 'TEST92428', 
                     user_data: {
                       em: [hashedEmail],
                       ...(hashedPhone && { ph: [hashedPhone] }),

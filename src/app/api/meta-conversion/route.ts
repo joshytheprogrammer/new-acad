@@ -85,7 +85,7 @@ export async function POST(request: NextRequest) {
           original_event_data: eventData.original_event_data,
         }
       ],
-      test_event_code: 'TEST92428',
+      // test_event_code: 'TEST92428',
     };
 
     // Send to Meta Conversions API

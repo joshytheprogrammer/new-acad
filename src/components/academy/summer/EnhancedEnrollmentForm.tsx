@@ -149,15 +149,15 @@ export default function EnhancedEnrollmentForm({
         throw new Error('Failed to store lead data');
       }
       
-      // Fire InitiateCheckout events (both pixel and conversions API)
+      // Fire ViewContent event when user proceeds to payment section
       // 1. Frontend Pixel Event
-      trackPixelEvent('InitiateCheckout', {
+      trackPixelEvent('ViewContent', {
         value: 50000,
         currency: 'NGN',
         content_name: '2025 Summer Academy - Surulere',
         content_category: 'Education',
         content_ids: ['summer-academy-2025'],
-        num_items: 1
+        content_type: 'product'
       }, eventId);
       
       // 2. Backend Conversions API Event (for better tracking)
@@ -185,7 +185,7 @@ export default function EnhancedEnrollmentForm({
           .digest('hex');
 
         const conversionData = {
-          event_name: 'InitiateCheckout',
+          event_name: 'ViewContent',
           event_time: Math.floor(Date.now() / 1000),
           action_source: 'website',
           event_id: eventId,
@@ -198,6 +198,9 @@ export default function EnhancedEnrollmentForm({
             client_user_agent: leadInfo.userAgent,
             fbp: leadInfo.fbp,
             fbc: leadInfo.fbc,
+            external_id: [
+                    hashedEmail
+                ]
           },
           attribution_data: {
             ad_id: null,
@@ -209,7 +212,7 @@ export default function EnhancedEnrollmentForm({
             currency: 'NGN',
           },
           original_event_data: {
-            event_name: 'InitiateCheckout',
+            event_name: 'ViewContent',
             event_time: Math.floor(Date.now() / 1000)
           }
         };
@@ -223,7 +226,7 @@ export default function EnhancedEnrollmentForm({
 
         if (conversionResponse.ok) {
           const result = await conversionResponse.json();
-          console.log('✅ InitiateCheckout event tracked successfully:', result);
+          console.log('✅ ViewContent event tracked successfully:', result);
           
           // Log to SheetDB for comprehensive tracking
           try {
@@ -231,7 +234,7 @@ export default function EnhancedEnrollmentForm({
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
-                event_name: 'InitiateCheckout',
+                event_name: 'ViewContent',
                 event_id: eventId,
                 event_time: Math.floor(Date.now() / 1000),
                 user_data: {
@@ -266,20 +269,20 @@ export default function EnhancedEnrollmentForm({
               }),
             });
           } catch (sheetError) {
-            console.warn('⚠️ InitiateCheckout sheet logging failed:', sheetError);
+            console.warn('⚠️ ViewContent sheet logging failed:', sheetError);
           }
         } else {
-          console.error('❌ InitiateCheckout conversion failed');
+          console.error('❌ ViewContent conversion failed');
         }
       } catch (conversionError) {
-        console.error('InitiateCheckout conversion failed:', conversionError);
+        console.error('ViewContent conversion failed:', conversionError);
         // Don't fail the form submission if conversion tracking fails
       }
       
       // Show payment section
       setShowPayment(true);
       
-      toast.success("Details captured! Proceed to secure payment.");
+      toast.success("Payment section loaded! Click 'ENROLL NOW' to proceed.");
       
     } catch (error) {
       console.error('Error processing form:', error);
@@ -351,13 +354,14 @@ export default function EnhancedEnrollmentForm({
           </p>
         </div>
         
-        <div className="text-center">
+        <div className="flex flex-col items-center">
           <PaystackButton
             email={leadData.email}
             amount={50000}
             onSuccess={handlePaystackSuccess}
             onClose={handlePaystackClose}
             disabled={false}
+            leadData={leadData}
           />
           
           <button

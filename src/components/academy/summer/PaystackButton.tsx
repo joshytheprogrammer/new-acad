@@ -1,6 +1,11 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { usePaystackPayment } from "react-paystack";
+import { 
+  generateEventId, 
+  trackPixelEvent,
+  type LeadData 
+} from "@/lib/metaHelpers";
 
 interface PaystackReference {
   message: string;
@@ -17,6 +22,7 @@ interface PaystackButtonProps {
   onSuccess: (reference: PaystackReference) => void;
   onClose: () => void;
   disabled?: boolean;
+  leadData?: LeadData; // Add leadData prop for InitiateCheckout tracking
 }
 
 const PaystackButton: React.FC<PaystackButtonProps> = ({
@@ -25,6 +31,7 @@ const PaystackButton: React.FC<PaystackButtonProps> = ({
   onSuccess,
   onClose,
   disabled,
+  leadData,
 }) => {
   const [isReady, setIsReady] = useState(false);
   const [error, setError] = useState<string>("");
@@ -62,9 +69,141 @@ const PaystackButton: React.FC<PaystackButtonProps> = ({
 
   const initializePayment = usePaystackPayment(config);
 
-  const handleClick = () => {
+  const handleClick = async () => {
     if (disabled || !isReady || error) {
       return;
+    }
+
+    // Fire InitiateCheckout event when user clicks "ENROLL NOW"
+    if (leadData) {
+      const initiateCheckoutEventId = generateEventId();
+      
+      // 1. Frontend Pixel Event
+      trackPixelEvent('InitiateCheckout', {
+        value: 50000,
+        currency: 'NGN',
+        content_name: '2025 Summer Academy - Surulere',
+        content_category: 'Education',
+        content_ids: ['summer-academy-2025'],
+        num_items: 1
+      }, initiateCheckoutEventId);
+      
+      // 2. Backend Conversions API Event (for better tracking)
+      try {
+        // Hash the user data according to Meta requirements
+        const crypto = await import('crypto');
+        
+        const hashedEmail = crypto
+          .createHash('sha256')
+          .update(leadData.email.toLowerCase().trim())
+          .digest('hex');
+          
+        const cleanPhone = leadData.phone.replace(/\D/g, '');
+        const phoneWithCountryCode = cleanPhone.startsWith('234') 
+          ? cleanPhone 
+          : `234${cleanPhone.replace(/^0/, '')}`;
+        const hashedPhone = crypto
+          .createHash('sha256')
+          .update(phoneWithCountryCode)
+          .digest('hex');
+
+        const hashedName = crypto
+          .createHash('sha256')
+          .update(leadData.name.toLowerCase().trim())
+          .digest('hex');
+
+        const conversionData = {
+          event_name: 'InitiateCheckout',
+          event_time: Math.floor(Date.now() / 1000),
+          action_source: 'website',
+          event_id: initiateCheckoutEventId,
+          event_source_url: leadData.sourceUrl,
+          user_data: {
+            em: [hashedEmail],
+            ph: [hashedPhone],
+            fn: [hashedName],
+            client_ip_address: leadData.clientIp,
+            client_user_agent: leadData.userAgent,
+            fbp: leadData.fbp,
+            fbc: leadData.fbc,
+            external_id: [hashedEmail]
+          },
+          attribution_data: {
+            ad_id: null,
+            adset_id: null,
+            campaign_id: null
+          },
+          custom_data: {
+            value: 50000,
+            currency: 'NGN',
+          },
+          original_event_data: {
+            event_name: 'InitiateCheckout',
+            event_time: Math.floor(Date.now() / 1000)
+          }
+        };
+
+        // Send to our meta-conversion endpoint (credentials will be handled server-side)
+        const conversionResponse = await fetch(`/api/meta-conversion`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(conversionData),
+        });
+
+        if (conversionResponse.ok) {
+          const result = await conversionResponse.json();
+          console.log('✅ InitiateCheckout event tracked successfully:', result);
+          
+          // Log to SheetDB for comprehensive tracking
+          try {
+            await fetch('/api/log-meta-event', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                event_name: 'InitiateCheckout',
+                event_id: initiateCheckoutEventId,
+                event_time: Math.floor(Date.now() / 1000),
+                user_data: {
+                  em: [hashedEmail],
+                  ph: [hashedPhone],
+                  fn: [hashedName],
+                  client_ip_address: leadData.clientIp,
+                  client_user_agent: leadData.userAgent,
+                  fbp: leadData.fbp,
+                  fbc: leadData.fbc,
+                },
+                custom_data: {
+                  value: 50000,
+                  currency: 'NGN',
+                },
+                event_source_url: leadData.sourceUrl,
+                source_info: {
+                  page_path: typeof window !== 'undefined' ? window.location.pathname : '',
+                  referrer: typeof document !== 'undefined' ? document.referrer : '',
+                  utm_source: typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('utm_source') || '' : '',
+                  utm_medium: typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('utm_medium') || '' : '',
+                  utm_campaign: typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('utm_campaign') || '' : '',
+                },
+                meta_response: result,
+                additional_data: { 
+                  form_data: { 
+                    name: leadData.name, 
+                    email: leadData.email, 
+                    phone: leadData.phone 
+                  } 
+                }
+              }),
+            });
+          } catch (sheetError) {
+            console.warn('⚠️ InitiateCheckout sheet logging failed:', sheetError);
+          }
+        } else {
+          console.error('❌ InitiateCheckout conversion failed');
+        }
+      } catch (conversionError) {
+        console.error('InitiateCheckout conversion failed:', conversionError);
+        // Don't fail the payment initialization if conversion tracking fails
+      }
     }
 
     try {

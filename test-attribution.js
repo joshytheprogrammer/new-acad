@@ -1,5 +1,5 @@
 // Test script to verify attribution data extraction
-const testUrl = 'https://academy.wandggroup.com/2025-summer-academy-surulere?campaign_id=120232171997590215&adset_id=120232465853060215&ad_id=120232465897720215&fbclid=PAQ0xDSwL2M_VleHRuA2FlbQEwAGFkaWQBqybKchtwNwGnXSFe8UQ6sS9LMggRD1clC2jpT_WvE76saqEK_cFW5e7fL47VLypfzLmxBQY_aem_5pNIedqVdD3KWCkAO5-r6w';
+const testUrl = 'http://localhost:3000/2025-summer-academy-surulere?campaign_id=120232171997590215&adset_id=120232465853060215&ad_id=120232465897720215&fbclid=PAQ0xDSwL2M_VleHRuA2FlbQEwAGFkaWQBqybKchtwNwGnXSFe8UQ6sS9LMggRD1clC2jpT_WvE76saqEK_cFW5e7fL47VLypfzLmxBQY_aem_5pNIedqVdD3KWCkAO5-r6w';
 
 // Extract URL parameters
 const url = new URL(testUrl);

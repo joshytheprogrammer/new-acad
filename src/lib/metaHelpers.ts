@@ -54,8 +54,20 @@ export function getFbc(): string | null {
  * Format: fb.1.{timestamp}.{fbclid}
  */
 export function generateFbcFromFbclid(fbclid: string): string {
+  // Validate fbclid case before generating fbc
+  console.log('🔍 Generating fbc from fbclid:', fbclid);
+  console.log('🔤 Fbclid case analysis:', {
+    hasUpperCase: /[A-Z]/.test(fbclid),
+    hasLowerCase: /[a-z]/.test(fbclid),
+    hasMixedCase: /[A-Z]/.test(fbclid) && /[a-z]/.test(fbclid),
+    length: fbclid.length
+  });
+  
   const timestamp = Math.floor(Date.now() / 1000);
-  return `fb.1.${timestamp}.${fbclid}`;
+  const fbc = `fb.1.${timestamp}.${fbclid}`;
+  
+  console.log('✅ Generated fbc:', fbc);
+  return fbc;
 }
 
 /**
@@ -66,16 +78,39 @@ export function getFbcFromUrlOrCookie(): string | null {
   
   // First try to get from cookie
   const cookieFbc = getFbc();
-  if (cookieFbc) return cookieFbc;
+  if (cookieFbc) {
+    console.log('📄 Using fbc from cookie:', cookieFbc);
+    
+    // Validate cookie fbc format and case
+    const fbcParts = cookieFbc.split('.');
+    if (fbcParts.length >= 4 && fbcParts[0] === 'fb' && fbcParts[1] === '1') {
+      const fbclidPortion = fbcParts.slice(3).join('.');
+      console.log('🔤 Cookie fbc case analysis:', {
+        fbclidPortion,
+        hasUpperCase: /[A-Z]/.test(fbclidPortion),
+        hasLowerCase: /[a-z]/.test(fbclidPortion),
+        hasMixedCase: /[A-Z]/.test(fbclidPortion) && /[a-z]/.test(fbclidPortion)
+      });
+      
+      // Check if cookie fbc has been modified to all lowercase
+      if (/[a-z]/.test(fbclidPortion) && !/[A-Z]/.test(fbclidPortion) && fbclidPortion.length > 50) {
+        console.warn('⚠️ WARNING: Cookie fbc appears to have lowercase fbclid - possible browser modification');
+      }
+    }
+    
+    return cookieFbc;
+  }
   
   // If no cookie, try to get fbclid from URL and generate fbc
   const urlParams = new URLSearchParams(window.location.search);
   const fbclid = urlParams.get('fbclid');
   
   if (fbclid) {
+    console.log('🔗 Generating fbc from URL fbclid:', fbclid);
     return generateFbcFromFbclid(fbclid);
   }
   
+  console.log('ℹ️ No fbc found in cookie or URL');
   return null;
 }
 

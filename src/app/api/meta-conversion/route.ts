@@ -77,6 +77,44 @@ export async function POST(request: NextRequest) {
       } else {
         console.log('✅ Using client-provided IP:', eventData.user_data.client_ip_address);
       }
+
+      // Validate fbc parameter to ensure fbclid case is preserved
+      if (eventData.user_data.fbc) {
+        const fbc = eventData.user_data.fbc;
+        console.log('🔍 Validating fbc parameter:', fbc);
+        
+        // Check if fbc follows the correct format: fb.1.{timestamp}.{fbclid}
+        const fbcParts = fbc.split('.');
+        if (fbcParts.length >= 4 && fbcParts[0] === 'fb' && fbcParts[1] === '1') {
+          const fbclidPortion = fbcParts.slice(3).join('.');
+          
+          // Log the fbclid portion for monitoring
+          console.log('📋 Extracted fbclid from fbc:', fbclidPortion);
+          
+          // Check for potential case modification issues
+          const hasUpperCase = /[A-Z]/.test(fbclidPortion);
+          const hasLowerCase = /[a-z]/.test(fbclidPortion);
+          const hasMixedCase = hasUpperCase && hasLowerCase;
+          
+          console.log('🔤 FBC Case Analysis:', {
+            hasUpperCase,
+            hasLowerCase,
+            hasMixedCase,
+            length: fbclidPortion.length
+          });
+          
+          // Warn if the fbclid appears to be all lowercase (potential case modification)
+          if (hasLowerCase && !hasUpperCase && fbclidPortion.length > 50) {
+            console.warn('⚠️ WARNING: fbclid appears to be all lowercase - possible case modification detected!');
+            console.warn('   This may cause Meta to flag as "modified fbclid value"');
+            console.warn('   Original mixed-case fbclid expected from Facebook ads');
+          }
+        } else {
+          console.warn('⚠️ WARNING: fbc parameter format is invalid:', fbc);
+        }
+      } else {
+        console.log('ℹ️ No fbc parameter provided in user_data');
+      }
     }
 
     // Handle attribution data - convert strings to numbers for Meta API
@@ -126,7 +164,7 @@ export async function POST(request: NextRequest) {
           original_event_data: eventData.original_event_data,
         }
       ],
-      // test_event_code: 'TEST56480',
+      test_event_code: 'TEST56480',
     };
 
     console.log('📊 Meta conversion received user_data:', {

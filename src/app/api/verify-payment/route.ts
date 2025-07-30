@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { checkoutDataStore } from '@/lib/checkoutDataStore';
+import { generateEventId } from '@/lib/metaHelpers';
 
 export async function POST(request: NextRequest) {
   try {
@@ -10,6 +11,13 @@ export async function POST(request: NextRequest) {
     if (!reference) {
       return NextResponse.json(
         { success: false, error: 'Payment reference is required' },
+        { status: 400 }
+      );
+    }
+
+    if (!eventId) {
+      return NextResponse.json(
+        { success: false, error: 'Event ID is required for tracking' },
         { status: 400 }
       );
     }
@@ -149,11 +157,14 @@ export async function POST(request: NextRequest) {
             sourceUrl: finalSourceUrl
           });
 
+          // Generate unique event ID for Purchase event
+          const purchaseEventId = generateEventId();
+          
           const conversionData = {
             event_name: 'Purchase',
             event_time: Math.floor(Date.now() / 1000),
             action_source: 'website',
-            event_id: eventId || `purchase_${transaction.reference}_${Date.now()}`,
+            event_id: purchaseEventId, // Use unique Purchase event ID
             event_source_url: finalSourceUrl,
             user_data: userData,
             custom_data: {

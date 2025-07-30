@@ -24,7 +24,7 @@ interface PaystackButtonProps {
   onClose: () => void;
   disabled?: boolean;
   leadData?: LeadData; // Add leadData prop for InitiateCheckout tracking
-  eventId?: string; // Pass the event ID from the form
+  sessionId?: string; // Optional session ID for correlation, not for event deduplication
 }
 
 const PaystackButton: React.FC<PaystackButtonProps> = ({
@@ -34,13 +34,15 @@ const PaystackButton: React.FC<PaystackButtonProps> = ({
   onClose,
   disabled,
   leadData,
-  eventId, // Destructure the eventId prop
+  sessionId, // Optional session ID for correlation
 }) => {
   const [isReady, setIsReady] = useState(false);
   const [error, setError] = useState<string>("");
   const [storedUserData, setStoredUserData] = useState<any>(null);
   const [storedEventId, setStoredEventId] = useState<string>('');
   const [storedSourceUrl, setStoredSourceUrl] = useState<string>('');
+  const [isProcessing, setIsProcessing] = useState(false); // Prevent multiple clicks
+  const [hasInitiated, setHasInitiated] = useState(false); // Track if InitiateCheckout already fired
 
   const publicKey = process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY;
 
@@ -67,7 +69,7 @@ const PaystackButton: React.FC<PaystackButtonProps> = ({
   }, [email, amount, publicKey]);
 
   const config = {
-    reference: new Date().getTime().toString(),
+    reference: `IC_${new Date().getTime()}_${Math.random().toString(36).substr(2, 9)}`, // Generate unique reference
     email,
     amount: amount * 100, // Amount in kobo
     publicKey: publicKey || "",
@@ -76,19 +78,79 @@ const PaystackButton: React.FC<PaystackButtonProps> = ({
   const initializePayment = usePaystackPayment(config);
 
   const handleClick = async () => {
-    if (disabled || !isReady || error) {
+    if (disabled || !isReady || error || isProcessing) {
       return;
     }
 
-    // Fire InitiateCheckout event when user clicks "ENROLL NOW"
-    if (leadData) {
-      // Use the provided eventId or generate a new one as fallback
-      const initiateCheckoutEventId = eventId || generateEventId();
+    // Prevent multiple clicks and duplicate InitiateCheckout events
+    if (hasInitiated) {
+      console.log('🚫 InitiateCheckout already fired for this session, skipping duplicate');
+      // Just initialize payment without firing another event
+      try {
+        setIsProcessing(true);
+        initializePayment({ 
+          onSuccess: (reference) => {
+            // Retrieve backup data from sessionStorage
+            let backupData = null;
+            if (typeof window !== 'undefined') {
+              const backupKey = `checkout_${storedEventId || 'fallback'}`;
+              const storedBackup = sessionStorage.getItem(backupKey);
+              if (storedBackup) {
+                try {
+                  backupData = JSON.parse(storedBackup);
+                  console.log('📦 Retrieved backup data from sessionStorage');
+                } catch (e) {
+                  console.warn('⚠️ Failed to parse backup data from sessionStorage');
+                }
+              }
+            }
+
+            // Add the stored user data to the reference object for payment verification
+            const enhancedReference = {
+              ...reference,
+              originalUserData: storedUserData,
+              eventId: storedEventId,
+              eventSourceUrl: storedSourceUrl,
+              backupData: backupData // Include backup data
+            };
+            
+            console.log('💳 Payment successful (no duplicate event), passing enhanced reference:', {
+              reference: reference.reference,
+              hasUserData: !!storedUserData,
+              eventId: storedEventId,
+              userDataKeys: storedUserData ? Object.keys(storedUserData) : []
+            });
+            
+            setIsProcessing(false);
+            onSuccess(enhancedReference);
+          }, 
+          onClose: () => {
+            setIsProcessing(false);
+            onClose();
+          }
+        });
+      } catch (err) {
+        console.error('Error initializing payment (duplicate prevention):', err);
+        setError("Failed to initialize payment");
+        setIsProcessing(false);
+      }
+      return;
+    }
+
+    setIsProcessing(true);
+
+    // Fire InitiateCheckout event when user clicks "ENROLL NOW" (only once)
+    if (leadData) { // User data is required
+      // Generate unique event ID for InitiateCheckout
+      const initiateCheckoutEventId = generateEventId();
       
-      console.log('🎯 Using eventId for InitiateCheckout:', {
+      console.log('🎯 Generated unique eventId for InitiateCheckout:', {
         eventId: initiateCheckoutEventId,
-        source: eventId ? 'provided from form' : 'generated as fallback'
+        source: 'generated for InitiateCheckout'
       });
+      
+      // Mark as initiated to prevent duplicates
+      setHasInitiated(true);
       
       // 1. Frontend Pixel Event
       trackPixelEvent('InitiateCheckout', {
@@ -130,7 +192,7 @@ const PaystackButton: React.FC<PaystackButtonProps> = ({
           event_name: 'InitiateCheckout',
           event_time: Math.floor(Date.now() / 1000),
           action_source: 'website',
-          event_id: initiateCheckoutEventId,
+          event_id: initiateCheckoutEventId, // Use the unique InitiateCheckout event ID
           event_source_url: leadData.sourceUrl,
           user_data: {
             em: [hashedEmail],
@@ -160,7 +222,7 @@ const PaystackButton: React.FC<PaystackButtonProps> = ({
         // Store the checkout data in in-memory store for Purchase event
         try {
           const storePayload = {
-            eventId: initiateCheckoutEventId,
+            eventId: initiateCheckoutEventId, // Use the unique InitiateCheckout event ID
             userData: conversionData.user_data,
             sourceUrl: leadData.sourceUrl,
             leadInfo: {
@@ -194,7 +256,7 @@ const PaystackButton: React.FC<PaystackButtonProps> = ({
 
         // Legacy state storage (keeping for compatibility)
         setStoredUserData(conversionData.user_data);
-        setStoredEventId(initiateCheckoutEventId);
+        setStoredEventId(initiateCheckoutEventId); // Store the InitiateCheckout event ID
         setStoredSourceUrl(leadData.sourceUrl);
         
         console.log('💾 Stored user data for payment verification:', {
@@ -222,7 +284,7 @@ const PaystackButton: React.FC<PaystackButtonProps> = ({
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
                 event_name: 'InitiateCheckout',
-                event_id: initiateCheckoutEventId,
+                event_id: initiateCheckoutEventId, // Use the unique InitiateCheckout event ID
                 event_time: Math.floor(Date.now() / 1000),
                 user_data: {
                   em: [hashedEmail],
@@ -253,11 +315,17 @@ const PaystackButton: React.FC<PaystackButtonProps> = ({
           }
         } else {
           console.error('❌ InitiateCheckout conversion failed');
+          setHasInitiated(false); // Reset if failed
         }
       } catch (conversionError) {
         console.error('InitiateCheckout conversion failed:', conversionError);
+        setHasInitiated(false); // Reset if failed
         // Don't fail the payment initialization if conversion tracking fails
       }
+    } else {
+      console.warn('🚫 No leadData or eventId provided - cannot fire InitiateCheckout event');
+      setIsProcessing(false);
+      return;
     }
 
     try {
@@ -266,7 +334,7 @@ const PaystackButton: React.FC<PaystackButtonProps> = ({
           // Retrieve backup data from sessionStorage
           let backupData = null;
           if (typeof window !== 'undefined') {
-            const backupKey = `checkout_${eventId || storedEventId}`;
+            const backupKey = `checkout_${storedEventId || 'fallback'}`;
             const storedBackup = sessionStorage.getItem(backupKey);
             if (storedBackup) {
               try {
@@ -291,20 +359,21 @@ const PaystackButton: React.FC<PaystackButtonProps> = ({
             reference: reference.reference,
             hasUserData: !!storedUserData,
             eventId: storedEventId,
-            providedEventId: eventId,
-            eventIdMatch: storedEventId === eventId,
             userDataKeys: storedUserData ? Object.keys(storedUserData) : []
           });
           
+          setIsProcessing(false);
           onSuccess(enhancedReference);
         }, 
         onClose: () => {
+          setIsProcessing(false);
           onClose();
         }
       });
     } catch (err) {
       console.error('Error initializing Paystack:', err);
       setError("Failed to initialize payment");
+      setIsProcessing(false);
     }
   };
 
@@ -349,14 +418,22 @@ const PaystackButton: React.FC<PaystackButtonProps> = ({
   return (
     <button
       onClick={handleClick}
-      disabled={disabled || !isReady}
+      disabled={disabled || !isReady || isProcessing}
       className={`font-bold py-4 px-8 rounded-lg text-xl transition-all duration-300 ${
-        disabled || !isReady
+        disabled || !isReady || isProcessing
           ? 'bg-gray-400 text-gray-200 opacity-75 cursor-not-allowed'
           : 'bg-chambray-700 hover:bg-chambray-800 text-white cursor-pointer hover:scale-105'
       }`}
     >
-      {disabled ? 'Complete Form First' : 'ENROLL NOW - ₦50,000'}
+      {isProcessing ? (
+        <span className="flex items-center justify-center">
+          <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          Processing...
+        </span>
+      ) : disabled ? 'Complete Form First' : 'ENROLL NOW - ₦50,000'}
     </button>
   );
 };

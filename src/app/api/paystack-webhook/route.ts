@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
+import { generateEventId } from '@/lib/metaHelpers';
 
 interface PaystackWebhookData {
   event: string;
@@ -109,6 +110,19 @@ export async function POST(request: NextRequest) {
         .digest('hex');
     }
 
+    // Validate that we have the required eventId for deduplication
+    if (!leadData.eventId) {
+      console.error('❌ No eventId found in lead data - cannot ensure deduplication');
+      return NextResponse.json({ 
+        error: 'Missing eventId for tracking',
+        reference: paymentData.reference 
+      }, { status: 400 });
+    }
+
+    // Generate unique event ID for Purchase event
+    const purchaseEventId = generateEventId();
+    console.log('🎯 Generated unique eventId for Purchase event:', purchaseEventId);
+
     if (leadData.clientIp) metaUserData.client_ip_address = leadData.clientIp;
     if (leadData.userAgent) metaUserData.client_user_agent = leadData.userAgent;
     if (leadData.fbp) metaUserData.fbp = leadData.fbp;
@@ -119,7 +133,7 @@ export async function POST(request: NextRequest) {
       event_name: 'Purchase',
       event_time: Math.floor(new Date(paymentData.paid_at || paymentData.created_at).getTime() / 1000),
       action_source: 'website',
-      event_id: leadData.eventId, // Critical: Same event_id for deduplication
+      event_id: purchaseEventId, // Use unique Purchase event ID
       event_source_url: leadData.sourceUrl || 'https://academy.wandgroup.com/2025-summer-academy-surulere',
       user_data: metaUserData,
       attribution_data: {

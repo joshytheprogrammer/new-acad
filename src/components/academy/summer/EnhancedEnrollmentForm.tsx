@@ -55,6 +55,18 @@ export default function EnhancedEnrollmentForm({
   const [leadData, setLeadData] = useState<LeadData | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [hasInitiatedCheckout, setHasInitiatedCheckout] = useState(false);
+  const [formSubmissionCount, setFormSubmissionCount] = useState(0); // Track form submissions
+
+  // Reset function for error recovery
+  const resetFormState = () => {
+    setShowPayment(false);
+    setHasInitiatedCheckout(false);
+    setCurrentEventId("");
+    setLeadData(null);
+    setFormSubmissionCount(0);
+    console.log('🔄 Form state reset for error recovery');
+  };
+
   const [validationErrors, setValidationErrors] = useState({
     name: "",
     email: "",
@@ -102,11 +114,13 @@ export default function EnhancedEnrollmentForm({
     const { name, value } = e.target;
     
     // Reset checkout state if user changes email (key identifier)
+    // But preserve eventId to prevent duplicates if they change back
     if (name === 'email' && hasInitiatedCheckout) {
       setHasInitiatedCheckout(false);
       setShowPayment(false);
-      setCurrentEventId("");
+      // Don't reset currentEventId - keep it for consistency
       setLeadData(null);
+      console.log('🔄 Email changed, reset checkout state but preserved eventId');
     }
     
     setFormData(prev => ({
@@ -120,15 +134,26 @@ export default function EnhancedEnrollmentForm({
     
     if (!isFormValid || isSubmitting) return;
     
-    // Prevent duplicate submissions and event tracking
+    // Prevent duplicate submissions for the same user data
     if (hasInitiatedCheckout && currentEventId && leadData) {
-      // If already processed, just show payment section
-      setShowPayment(true);
-      toast.success("Payment section loaded! Click 'ENROLL NOW' to proceed.");
-      return;
+      // Check if it's the same user data
+      const sameUserData = leadData.email === formData.email && 
+                          leadData.name === formData.name && 
+                          leadData.phone === formData.phone;
+      
+      if (sameUserData) {
+        // If already processed with same data, just show payment section
+        setShowPayment(true);
+        toast.success("Payment section loaded! Click 'ENROLL NOW' to proceed.");
+        return;
+      } else {
+        // Different data - allow new submission but warn about potential duplicate
+        console.log('⚠️ User data changed, allowing new submission');
+      }
     }
     
     setIsSubmitting(true);
+    setFormSubmissionCount(prev => prev + 1);
     
     try {
       // Generate unique event ID only once for this enrollment attempt
@@ -136,6 +161,9 @@ export default function EnhancedEnrollmentForm({
       if (!eventId) {
         eventId = generateEventId();
         setCurrentEventId(eventId);
+        console.log('🆔 Generated new eventId:', eventId);
+      } else {
+        console.log('🔄 Reusing existing eventId:', eventId);
       }
       
       // Get browser data and client IP
@@ -173,6 +201,11 @@ export default function EnhancedEnrollmentForm({
           throw new Error('Failed to store lead data');
         }
         
+      // Fire ViewContent event only if not already initiated
+      if (!hasInitiatedCheckout) {
+        // Generate unique event ID for ViewContent
+        const viewContentEventId = generateEventId();
+        
         // Fire ViewContent event when user proceeds to payment section
         // 1. Frontend Pixel Event
         trackPixelEvent('ViewContent', {
@@ -182,9 +215,7 @@ export default function EnhancedEnrollmentForm({
           content_category: 'Education',
           content_ids: ['summer-academy-2025'],
           content_type: 'product'
-        }, eventId);
-      
-        // 2. Backend Conversions API Event (for better tracking)
+        }, viewContentEventId);        // 2. Backend Conversions API Event (for better tracking)
         try {
           // Hash the user data according to Meta requirements
           const crypto = await import('crypto');
@@ -214,7 +245,7 @@ export default function EnhancedEnrollmentForm({
             event_name: 'ViewContent',
             event_time: Math.floor(Date.now() / 1000),
             action_source: 'website',
-            event_id: eventId,
+            event_id: viewContentEventId,
             event_source_url: leadInfo.sourceUrl,
             user_data: {
               em: [hashedEmail],
@@ -262,7 +293,7 @@ export default function EnhancedEnrollmentForm({
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                   event_name: 'ViewContent',
-                  event_id: eventId,
+                  event_id: viewContentEventId,
                   event_time: Math.floor(Date.now() / 1000),
                   user_data: {
                     em: [hashedEmail],
@@ -302,6 +333,10 @@ export default function EnhancedEnrollmentForm({
         
         // Mark that we've initiated checkout to prevent duplicates
         setHasInitiatedCheckout(true);
+        console.log('✅ Form submission completed - hasInitiatedCheckout set to true');
+      } else {
+        console.log('⏭️ ViewContent event skipped - already initiated checkout');
+      }
       }
       
       // Show payment section
@@ -387,7 +422,7 @@ export default function EnhancedEnrollmentForm({
     }
   };
 
-  if (showPayment && leadData) {
+  if (showPayment && leadData && currentEventId) {
     return (
       <div className="space-y-6">
         <div className="bg-chambray-50 border border-chambray-200 rounded-lg p-4">
@@ -410,19 +445,53 @@ export default function EnhancedEnrollmentForm({
             onClose={handlePaystackClose}
             disabled={false}
             leadData={leadData}
-            eventId={currentEventId} // Pass the current event ID
           />
           
           <button
             onClick={() => {
+              // Only allow going back to edit if no payment has been attempted
+              console.log('🔙 Edit Details clicked');
               setShowPayment(false);
-              setHasInitiatedCheckout(false);
+              // Don't reset hasInitiatedCheckout to prevent duplicate events
+              // setHasInitiatedCheckout(false); // Removed to prevent duplicate tracking
+              // Keep eventId and leadData to maintain consistency
             }}
             className="mt-4 text-sm text-gray-600 hover:text-gray-800 underline"
           >
             ← Edit Details
           </button>
         </div>
+      </div>
+    );
+  }
+
+  // Error state if payment section is requested but eventId is missing
+  if (showPayment && leadData && !currentEventId) {
+    return (
+      <div className="space-y-6">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+          <div className="flex items-center">
+            <svg className="w-5 h-5 text-red-600 mr-2" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+            </svg>
+            <span className="text-red-800 font-medium">Setup Error</span>
+          </div>
+          <p className="text-red-700 text-sm mt-1">
+            Missing tracking ID. Please submit the form again.
+          </p>
+        </div>
+        
+        <button
+          onClick={() => {
+            setShowPayment(false);
+            setHasInitiatedCheckout(false);
+            setLeadData(null);
+            setCurrentEventId("");
+          }}
+          className="w-full bg-red-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-red-700 transition-colors"
+        >
+          ← Return to Form
+        </button>
       </div>
     );
   }
@@ -520,9 +589,9 @@ export default function EnhancedEnrollmentForm({
       {/* Submit Button */}
       <button
         type="submit"
-        disabled={!isFormValid || isSubmitting}
+        disabled={!isFormValid || isSubmitting || formSubmissionCount > 3}
         className={`w-full font-bold py-4 px-8 rounded-lg text-xl transition-all duration-300 ${
-          isFormValid && !isSubmitting
+          isFormValid && !isSubmitting && formSubmissionCount <= 3
             ? 'bg-chambray-700 hover:bg-chambray-800 text-white cursor-pointer'
             : 'bg-gray-400 text-gray-200 cursor-not-allowed'
         }`}
@@ -535,10 +604,27 @@ export default function EnhancedEnrollmentForm({
             </svg>
             Processing...
           </span>
+        ) : formSubmissionCount > 3 ? (
+          "TOO MANY ATTEMPTS"
         ) : (
           "PROCEED TO PAYMENT →"
         )}
       </button>
+
+      {/* Multiple submission warning */}
+      {formSubmissionCount > 3 && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+          <p className="text-red-800 text-sm mb-2">
+            ⚠️ Multiple submission attempts detected. This prevents duplicate events.
+          </p>
+          <button
+            onClick={resetFormState}
+            className="text-chambray-600 hover:text-chambray-800 underline text-sm"
+          >
+            Reset Form
+          </button>
+        </div>
+      )}
 
       {/* Form Status */}
       {!isFormValid && (formData.name || formData.email || formData.phone) && (

@@ -102,7 +102,7 @@ function SuccessContent() {
             </a>
             
             <Link
-              href="/"
+              href="/2025-summer-academy-surulere"
               className="inline-flex items-center justify-center w-full bg-chambray-600 hover:bg-chambray-700 text-white font-bold py-3 px-6 rounded-lg transition-colors duration-300"
             >
               Back to Academy

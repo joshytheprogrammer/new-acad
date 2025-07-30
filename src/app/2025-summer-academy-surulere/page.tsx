@@ -40,7 +40,7 @@ const trackAcademyPageView = async () => {
       const browserData = getBrowserData();
       
       // Fire Facebook Pixel PageView event
-      (window as any).fbq('track', 'PageView', {test_event_code: 'TEST56480'}, { eventID: eventId });
+      (window as any).fbq('track', 'PageView', {}, { eventID: eventId });
       
       // Send to Meta Conversions API with proper format
       const eventData = {

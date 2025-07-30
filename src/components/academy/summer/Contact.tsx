@@ -185,9 +185,23 @@ export default function Contact() {
 
   const getClientIp = async (): Promise<string> => {
     try {
-      const response = await fetch('https://api.ipify.org?format=json');
-      const data = await response.json();
-      return data.ip || '0.0.0.0'; 
+      // First try to get IPv6 address
+      try {
+        const ipv6Response = await fetch('https://api64.ipify.org?format=json');
+        const ipv6Data = await ipv6Response.json();
+        if (ipv6Data.ip && ipv6Data.ip.includes(':')) {
+          console.log('🌐 Contact form using IPv6 address:', ipv6Data.ip);
+          return ipv6Data.ip;
+        }
+      } catch (ipv6Error) {
+        console.warn('Contact form IPv6 fetch failed, falling back to IPv4:', ipv6Error);
+      }
+
+      // Fallback to IPv4 if IPv6 is not available
+      const ipv4Response = await fetch('https://api.ipify.org?format=json');
+      const ipv4Data = await ipv4Response.json();
+      console.log('🌐 Contact form using IPv4 address (IPv6 not available):', ipv4Data.ip);
+      return ipv4Data.ip || '0.0.0.0'; 
     } catch (error) {
       console.warn('Could not get client IP:', error);
       return '0.0.0.0';

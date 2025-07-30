@@ -1,28 +1,33 @@
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
 
-// Helper function to get client IP address
+// Helper function to get client IP address (prioritizes IPv6)
 function getClientIP(request: NextRequest): string {
   // Check various headers for the real IP
   const forwarded = request.headers.get('x-forwarded-for');
   const realIp = request.headers.get('x-real-ip');
   const clientIp = request.headers.get('x-client-ip');
   
+  let detectedIp = '';
+  
   if (forwarded) {
     // x-forwarded-for can contain multiple IPs, take the first one
-    return forwarded.split(',')[0].trim();
+    detectedIp = forwarded.split(',')[0].trim();
+  } else if (realIp) {
+    detectedIp = realIp;
+  } else if (clientIp) {
+    detectedIp = clientIp;
   }
   
-  if (realIp) {
-    return realIp;
+  // If we found an IP, check if it's IPv6 or IPv4
+  if (detectedIp) {
+    console.log('🌐 Detected IP from headers:', detectedIp, detectedIp.includes(':') ? '(IPv6)' : '(IPv4)');
+    return detectedIp;
   }
   
-  if (clientIp) {
-    return clientIp;
-  }
-  
-  // Fallback to a default IP if none found
-  return '0.0.0.0';
+  // Fallback to IPv6 loopback, then IPv4 if none found
+  console.warn('⚠️ No IP found in headers, using IPv6 loopback fallback');
+  return '::1'; // IPv6 loopback instead of IPv4 0.0.0.0
 }
 
 export async function POST(request: NextRequest) {
@@ -65,8 +70,12 @@ export async function POST(request: NextRequest) {
       // Use server-detected IP if client didn't provide one or sent placeholder
       if (!eventData.user_data.client_ip_address || 
           eventData.user_data.client_ip_address === '0.0.0.0' ||
+          eventData.user_data.client_ip_address === '::1' ||
           eventData.user_data.client_ip_address === '192.168.1.1') {
         eventData.user_data.client_ip_address = clientIp;
+        console.log('🔄 Enhanced client IP with server-detected IP:', clientIp);
+      } else {
+        console.log('✅ Using client-provided IP:', eventData.user_data.client_ip_address);
       }
     }
 

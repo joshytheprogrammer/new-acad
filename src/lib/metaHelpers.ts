@@ -208,13 +208,27 @@ export function trackPixelEvent(eventName: string, eventData: any = {}, eventId?
 }
 
 /**
- * Gets client IP address
+ * Gets client IP address (prioritizes IPv6)
  */
 export async function getClientIp(): Promise<string> {
   try {
-    const response = await fetch('https://api.ipify.org?format=json');
-    const data = await response.json();
-    return data.ip;
+    // First try to get IPv6 address
+    try {
+      const ipv6Response = await fetch('https://api64.ipify.org?format=json');
+      const ipv6Data = await ipv6Response.json();
+      if (ipv6Data.ip && ipv6Data.ip.includes(':')) {
+        console.log('🌐 Using IPv6 address:', ipv6Data.ip);
+        return ipv6Data.ip;
+      }
+    } catch (ipv6Error) {
+      console.warn('IPv6 fetch failed, falling back to IPv4:', ipv6Error);
+    }
+
+    // Fallback to IPv4 if IPv6 is not available
+    const ipv4Response = await fetch('https://api.ipify.org?format=json');
+    const ipv4Data = await ipv4Response.json();
+    console.log('🌐 Using IPv4 address (IPv6 not available):', ipv4Data.ip);
+    return ipv4Data.ip;
   } catch (error) {
     console.error('Error fetching IP:', error);
     return '';

@@ -50,6 +50,36 @@ export function getFbc(): string | null {
 }
 
 /**
+ * Generates Facebook click ID (fbc) from fbclid URL parameter
+ * Format: fb.1.{timestamp}.{fbclid}
+ */
+export function generateFbcFromFbclid(fbclid: string): string {
+  const timestamp = Math.floor(Date.now() / 1000);
+  return `fb.1.${timestamp}.${fbclid}`;
+}
+
+/**
+ * Gets Facebook click ID from URL parameter or cookie
+ */
+export function getFbcFromUrlOrCookie(): string | null {
+  if (typeof window === 'undefined') return null;
+  
+  // First try to get from cookie
+  const cookieFbc = getFbc();
+  if (cookieFbc) return cookieFbc;
+  
+  // If no cookie, try to get fbclid from URL and generate fbc
+  const urlParams = new URLSearchParams(window.location.search);
+  const fbclid = urlParams.get('fbclid');
+  
+  if (fbclid) {
+    return generateFbcFromFbclid(fbclid);
+  }
+  
+  return null;
+}
+
+/**
  * Hashes a string using SHA-256 for privacy compliance
  * Works in both browser and Node.js environments
  */
@@ -79,44 +109,46 @@ export function hashStringSync(input: string): string {
   return crypto.createHash('sha256').update(input.toLowerCase().trim()).digest('hex');
 }
 
-/**
- * Gets attribution data from URL parameters consistently across the app
- */
+
 export function getAttributionData() {
   if (typeof window === 'undefined') {
     return { 
       ad_id: null, 
       adset_id: null, 
       campaign_id: null,
-      utm_source: null,
-      utm_medium: null,
-      utm_term: null,
-      utm_content: null,
-      utm_campaign: null,
-      fbclid: null,
-      gclid: null,
     };
   }
-  
+
   const urlParams = new URLSearchParams(window.location.search);
-  
+
+  const adIdStr = urlParams.get('ad_id');
+  const adsetIdStr = urlParams.get('adset_id') || urlParams.get('adgroupid');
+  const campaignIdStr = urlParams.get('campaign_id') || urlParams.get('campaignid');
+
+  // Convert to numbers using BigInt and strip the 'n' suffix
+  const convertToMetaNumber = (str: string | null) => {
+    if (!str) return null;
+    try {
+      const bigIntVal = BigInt(str);
+      return bigIntVal.toString(); // Meta accepts number-like string
+    } catch (e) {
+      console.warn(`Invalid attribution ID: ${str}`);
+      return null;
+    }
+  };
+
+  const ad_id = convertToMetaNumber(adIdStr);
+  const adset_id = convertToMetaNumber(adsetIdStr);
+  const campaign_id = convertToMetaNumber(campaignIdStr);
+
+
   return {
-    ad_id: urlParams.get('fbclid') || urlParams.get('gclid') || urlParams.get('ad_id') || null,
-    adset_id: urlParams.get('adset_id') || urlParams.get('adgroupid') || null,
-    campaign_id: urlParams.get('campaign_id') || urlParams.get('campaignid') || urlParams.get('utm_campaign') || null,
-    utm_source: urlParams.get('utm_source') || null,
-    utm_medium: urlParams.get('utm_medium') || null,
-    utm_term: urlParams.get('utm_term') || null,
-    utm_content: urlParams.get('utm_content') || null,
-    utm_campaign: urlParams.get('utm_campaign') || null,
-    fbclid: urlParams.get('fbclid') || null,
-    gclid: urlParams.get('gclid') || null,
+    ad_id,
+    adset_id,
+    campaign_id
   };
 }
 
-/**
- * Gets browser data for Conversions API
- */
 export function getBrowserData() {
   if (typeof window === 'undefined') {
     return {
@@ -130,7 +162,7 @@ export function getBrowserData() {
   return {
     userAgent: navigator.userAgent,
     fbp: getFbp(),
-    fbc: getFbc(),
+    fbc: getFbcFromUrlOrCookie(),
     sourceUrl: window.location.href
   };
 }

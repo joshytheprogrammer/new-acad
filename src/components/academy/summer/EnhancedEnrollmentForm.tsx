@@ -54,6 +54,7 @@ export default function EnhancedEnrollmentForm({
   const [currentEventId, setCurrentEventId] = useState<string>("");
   const [leadData, setLeadData] = useState<LeadData | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [hasInitiatedCheckout, setHasInitiatedCheckout] = useState(false);
   const [validationErrors, setValidationErrors] = useState({
     name: "",
     email: "",
@@ -99,6 +100,15 @@ export default function EnhancedEnrollmentForm({
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
+    
+    // Reset checkout state if user changes email (key identifier)
+    if (name === 'email' && hasInitiatedCheckout) {
+      setHasInitiatedCheckout(false);
+      setShowPayment(false);
+      setCurrentEventId("");
+      setLeadData(null);
+    }
+    
     setFormData(prev => ({
       ...prev,
       [name]: value
@@ -110,12 +120,23 @@ export default function EnhancedEnrollmentForm({
     
     if (!isFormValid || isSubmitting) return;
     
+    // Prevent duplicate submissions and event tracking
+    if (hasInitiatedCheckout && currentEventId && leadData) {
+      // If already processed, just show payment section
+      setShowPayment(true);
+      toast.success("Payment section loaded! Click 'ENROLL NOW' to proceed.");
+      return;
+    }
+    
     setIsSubmitting(true);
     
     try {
-      // Generate unique event ID for this enrollment attempt
-      const eventId = generateEventId();
-      setCurrentEventId(eventId);
+      // Generate unique event ID only once for this enrollment attempt
+      let eventId = currentEventId;
+      if (!eventId) {
+        eventId = generateEventId();
+        setCurrentEventId(eventId);
+      }
       
       // Get browser data and client IP
       const browserData = getBrowserData();
@@ -137,153 +158,150 @@ export default function EnhancedEnrollmentForm({
       
       setLeadData(leadInfo);
       
-      // Store lead data with status PENDING
-      const storeResponse = await fetch('/api/store-lead', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(leadInfo),
-      });
-      
-      if (!storeResponse.ok) {
-        throw new Error('Failed to store lead data');
-      }
-      
-      // Fire ViewContent event when user proceeds to payment section
-      // 1. Frontend Pixel Event
-      trackPixelEvent('ViewContent', {
-        value: 50000,
-        currency: 'NGN',
-        content_name: '2025 Summer Academy - Surulere',
-        content_category: 'Education',
-        content_ids: ['summer-academy-2025'],
-        content_type: 'product'
-      }, eventId);
-      
-      // 2. Backend Conversions API Event (for better tracking)
-      try {
-        // Hash the user data according to Meta requirements
-        const crypto = await import('crypto');
-        
-        const hashedEmail = crypto
-          .createHash('sha256')
-          .update(leadInfo.email.toLowerCase().trim())
-          .digest('hex');
-          
-        const cleanPhone = leadInfo.phone.replace(/\D/g, '');
-        const phoneWithCountryCode = cleanPhone.startsWith('234') 
-          ? cleanPhone 
-          : `234${cleanPhone.replace(/^0/, '')}`;
-        const hashedPhone = crypto
-          .createHash('sha256')
-          .update(phoneWithCountryCode)
-          .digest('hex');
-
-        const hashedName = crypto
-          .createHash('sha256')
-          .update(leadInfo.name.toLowerCase().trim())
-          .digest('hex');
-
-        const attributionData = getAttributionData();
-
-        const conversionData = {
-          event_name: 'ViewContent',
-          event_time: Math.floor(Date.now() / 1000),
-          action_source: 'website',
-          event_id: eventId,
-          event_source_url: leadInfo.sourceUrl,
-          user_data: {
-            em: [hashedEmail],
-            ph: [hashedPhone],
-            fn: [hashedName],
-            client_ip_address: leadInfo.clientIp,
-            client_user_agent: leadInfo.userAgent,
-            fbp: leadInfo.fbp,
-            fbc: leadInfo.fbc,
-            external_id: [hashedEmail]
-          },
-          attribution_data: {
-            ad_id: attributionData.ad_id,
-            adset_id: attributionData.adset_id,
-            campaign_id: attributionData.campaign_id,
-          },
-          custom_data: {
-            value: 50000,
-            currency: 'NGN',
-          },
-          original_event_data: {
-            event_name: 'ViewContent',
-            event_time: Math.floor(Date.now() / 1000)
-          }
-        };
-
-        // Send to our meta-conversion endpoint (credentials will be handled server-side)
-        const conversionResponse = await fetch(`/api/meta-conversion`, {
+      // Only store lead data and fire tracking events if not already done
+      if (!hasInitiatedCheckout) {
+        // Store lead data with status PENDING
+        const storeResponse = await fetch('/api/store-lead', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(conversionData),
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(leadInfo),
         });
-
-        if (conversionResponse.ok) {
-          const result = await conversionResponse.json();
-          console.log('✅ ViewContent event tracked successfully:', result);
-          
-          // Log to SheetDB for comprehensive tracking
-          try {
-            const attributionData = getAttributionData();
-            await fetch('/api/log-meta-event', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                event_name: 'ViewContent',
-                event_id: eventId,
-                event_time: Math.floor(Date.now() / 1000),
-                user_data: {
-                  em: [hashedEmail],
-                  ph: [hashedPhone],
-                  fn: [hashedName],
-                  client_ip_address: leadInfo.clientIp,
-                  client_user_agent: leadInfo.userAgent,
-                  fbp: leadInfo.fbp,
-                  fbc: leadInfo.fbc,
-                  external_id: [hashedEmail],
-                },
-                custom_data: {
-                  value: 50000,
-                  currency: 'NGN',
-                },
-                event_source_url: leadInfo.sourceUrl,
-                source_info: {
-                  page_path: typeof window !== 'undefined' ? window.location.pathname : '',
-                  referrer: typeof document !== 'undefined' ? document.referrer : '',
-                  utm_source: attributionData.utm_source || '',
-                  utm_medium: attributionData.utm_medium || '',
-                  utm_campaign: attributionData.utm_campaign || '',
-                  utm_term: attributionData.utm_term || '',
-                  utm_content: attributionData.utm_content || '',
-                  fbclid: attributionData.fbclid || '',
-                  gclid: attributionData.gclid || '',
-                },
-                meta_response: result,
-                additional_data: { 
-                  form_data: { 
-                    name: leadInfo.name, 
-                    email: leadInfo.email, 
-                    phone: leadInfo.phone 
-                  } 
-                }
-              }),
-            });
-          } catch (sheetError) {
-            console.warn('⚠️ ViewContent sheet logging failed:', sheetError);
-          }
-        } else {
-          console.error('❌ ViewContent conversion failed');
+        
+        if (!storeResponse.ok) {
+          throw new Error('Failed to store lead data');
         }
-      } catch (conversionError) {
-        console.error('ViewContent conversion failed:', conversionError);
-        // Don't fail the form submission if conversion tracking fails
+        
+        // Fire ViewContent event when user proceeds to payment section
+        // 1. Frontend Pixel Event
+        trackPixelEvent('ViewContent', {
+          value: 50000,
+          currency: 'NGN',
+          content_name: '2025 Summer Academy - Surulere',
+          content_category: 'Education',
+          content_ids: ['summer-academy-2025'],
+          content_type: 'product'
+        }, eventId);
+      
+        // 2. Backend Conversions API Event (for better tracking)
+        try {
+          // Hash the user data according to Meta requirements
+          const crypto = await import('crypto');
+          
+          const hashedEmail = crypto
+            .createHash('sha256')
+            .update(leadInfo.email.toLowerCase().trim())
+            .digest('hex');
+            
+          const cleanPhone = leadInfo.phone.replace(/\D/g, '');
+          const phoneWithCountryCode = cleanPhone.startsWith('234') 
+            ? cleanPhone 
+            : `234${cleanPhone.replace(/^0/, '')}`;
+          const hashedPhone = crypto
+            .createHash('sha256')
+            .update(phoneWithCountryCode)
+            .digest('hex');
+
+          const hashedName = crypto
+            .createHash('sha256')
+            .update(leadInfo.name.toLowerCase().trim())
+            .digest('hex');
+
+          const attributionData = getAttributionData();
+
+          const conversionData = {
+            event_name: 'ViewContent',
+            event_time: Math.floor(Date.now() / 1000),
+            action_source: 'website',
+            event_id: eventId,
+            event_source_url: leadInfo.sourceUrl,
+            user_data: {
+              em: [hashedEmail],
+              ph: [hashedPhone],
+              fn: [hashedName],
+              client_ip_address: leadInfo.clientIp,
+              client_user_agent: leadInfo.userAgent,
+              fbp: leadInfo.fbp,
+              fbc: leadInfo.fbc,
+              external_id: [hashedEmail]
+            },
+            attribution_data: {
+              ad_id: attributionData.ad_id,
+              adset_id: attributionData.adset_id,
+              campaign_id: attributionData.campaign_id,
+            },
+            custom_data: {
+              content_name: '2025 Summer Academy - Surulere',
+              content_category: 'Education',
+              content_ids: ['summer-academy-2025'],
+              content_type: 'product'
+            },
+            original_event_data: {
+              event_name: 'ViewContent',
+              event_time: Math.floor(Date.now() / 1000)
+            }
+          };
+
+          // Send to our meta-conversion endpoint (credentials will be handled server-side)
+          const conversionResponse = await fetch(`/api/meta-conversion`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(conversionData),
+          });
+
+          if (conversionResponse.ok) {
+            const result = await conversionResponse.json();
+            console.log('✅ ViewContent event tracked successfully:', result);
+            
+            // Log to SheetDB for comprehensive tracking
+            try {
+              const attributionData = getAttributionData();
+              await fetch('/api/log-meta-event', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  event_name: 'ViewContent',
+                  event_id: eventId,
+                  event_time: Math.floor(Date.now() / 1000),
+                  user_data: {
+                    em: [hashedEmail],
+                    ph: [hashedPhone],
+                    fn: [hashedName],
+                    client_ip_address: leadInfo.clientIp,
+                    client_user_agent: leadInfo.userAgent,
+                    fbp: leadInfo.fbp,
+                    fbc: leadInfo.fbc,
+                    external_id: [hashedEmail],
+                  },
+                  custom_data: {
+                    value: 50000,
+                    currency: 'NGN',
+                  },
+                  event_source_url: leadInfo.sourceUrl,
+                  meta_response: result,
+                  additional_data: { 
+                    form_data: { 
+                      name: leadInfo.name, 
+                      email: leadInfo.email, 
+                      phone: leadInfo.phone 
+                    } 
+                  }
+                }),
+              });
+            } catch (sheetError) {
+              console.warn('⚠️ ViewContent sheet logging failed:', sheetError);
+            }
+          } else {
+            console.error('❌ ViewContent conversion failed');
+          }
+        } catch (conversionError) {
+          console.error('ViewContent conversion failed:', conversionError);
+          // Don't fail the form submission if conversion tracking fails
+        }
+        
+        // Mark that we've initiated checkout to prevent duplicates
+        setHasInitiatedCheckout(true);
       }
       
       // Show payment section
@@ -304,16 +322,32 @@ export default function EnhancedEnrollmentForm({
       // Show loading state
       toast.loading("Verifying payment...");
       
-      // Verify payment with our backend
+      const verifyPayload = {
+        reference: reference.reference,
+        eventId: (reference as any).eventId || currentEventId,
+        originalUserData: (reference as any).originalUserData,
+        eventSourceUrl: (reference as any).eventSourceUrl,
+        backupData: (reference as any).backupData, // Include backup data
+      };
+      
+      console.log('🔍 Sending payment verification with data:', {
+        reference: verifyPayload.reference,
+        eventId: verifyPayload.eventId,
+        currentEventIdFromForm: currentEventId,
+        eventIdMatch: verifyPayload.eventId === currentEventId,
+        hasOriginalUserData: !!verifyPayload.originalUserData,
+        hasBackupData: !!verifyPayload.backupData,
+        originalUserDataKeys: verifyPayload.originalUserData ? Object.keys(verifyPayload.originalUserData) : [],
+        eventSourceUrl: verifyPayload.eventSourceUrl
+      });
+      
+      // Verify payment with our backend, including original user data
       const verifyResponse = await fetch('/api/verify-payment', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          reference: reference.reference,
-          eventId: currentEventId,
-        }),
+        body: JSON.stringify(verifyPayload),
       });
 
       const verifyResult = await verifyResponse.json();
@@ -321,6 +355,13 @@ export default function EnhancedEnrollmentForm({
       if (verifyResult.success) {
         toast.dismiss();
         toast.success("Payment verified successfully!");
+        
+        // Clean up sessionStorage backup data
+        if (typeof window !== 'undefined') {
+          const backupKey = `checkout_${currentEventId}`;
+          sessionStorage.removeItem(backupKey);
+          console.log('🗑️ Cleaned up backup data from sessionStorage');
+        }
         
         if (onSuccess) {
           onSuccess(reference);
@@ -369,10 +410,14 @@ export default function EnhancedEnrollmentForm({
             onClose={handlePaystackClose}
             disabled={false}
             leadData={leadData}
+            eventId={currentEventId} // Pass the current event ID
           />
           
           <button
-            onClick={() => setShowPayment(false)}
+            onClick={() => {
+              setShowPayment(false);
+              setHasInitiatedCheckout(false);
+            }}
             className="mt-4 text-sm text-gray-600 hover:text-gray-800 underline"
           >
             ← Edit Details

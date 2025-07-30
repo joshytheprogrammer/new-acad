@@ -123,13 +123,13 @@ export async function POST(request: NextRequest) {
       event_source_url: leadData.sourceUrl || 'https://academy.wandgroup.com/2025-summer-academy-surulere',
       user_data: metaUserData,
       attribution_data: {
-        ad_id: null,
-        adset_id: null,
-        campaign_id: null
+        ad_id: leadData.ad_id || null,
+        adset_id: leadData.adset_id || null,
+        campaign_id: leadData.campaign_id || null
       },
       custom_data: {
         currency: 'NGN',
-        num_items: 50000,
+        value: paymentData.amount / 100, // Convert from kobo to naira
       },
       original_event_data: {
         event_name: 'Purchase',

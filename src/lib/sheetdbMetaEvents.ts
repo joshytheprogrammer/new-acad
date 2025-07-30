@@ -25,13 +25,6 @@ interface MetaEventData {
     num_items?: number;
   };
   event_source_url?: string;
-  source_info?: {
-    page_path?: string;
-    referrer?: string;
-    utm_source?: string;
-    utm_medium?: string;
-    utm_campaign?: string;
-  };
   meta_response?: {
     events_received?: number;
     fbtrace_id?: string;
@@ -64,7 +57,6 @@ export async function logMetaEventToSheetDB(eventData: MetaEventData, additional
     // Extract user data safely
     const userData = eventData.user_data || {};
     const customData = eventData.custom_data || {};
-    const sourceInfo = eventData.source_info || {};
     const metaResponse = eventData.meta_response || {};
 
     // Prepare data for SheetDB (column names should match your sheet headers)
@@ -90,10 +82,6 @@ export async function logMetaEventToSheetDB(eventData: MetaEventData, additional
       content_name: customData.content_name || '', // Content Name
       content_category: customData.content_category || '', // Content Category
       page_url: eventData.event_source_url || '',  // Page URL
-      referrer: sourceInfo.referrer || '',         // Referrer
-      utm_source: sourceInfo.utm_source || '',     // UTM Source
-      utm_medium: sourceInfo.utm_medium || '',     // UTM Medium
-      utm_campaign: sourceInfo.utm_campaign || '', // UTM Campaign
       meta_events_received: metaResponse.events_received || '', // Meta Events Received
       meta_trace_id: metaResponse.fbtrace_id || '', // Meta Trace ID
       additional_data: additionalData ? JSON.stringify(additionalData) : '', // Additional Data (JSON)

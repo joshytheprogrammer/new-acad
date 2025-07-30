@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { getAttributionData } from "@/lib/metaHelpers";
+import { getAttributionData, getBrowserData, generateEventId } from "@/lib/metaHelpers";
 
 // Helper function to hash data using Web Crypto API
 const hashData = async (data: string): Promise<string> => {
@@ -40,7 +40,7 @@ export default function Contact() {
 
         try {
             // Track form submission with Meta Conversions API
-            const eventId = `contact_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+            const eventId = generateEventId();
             
             // Fire Facebook Pixel Contact event
             if (typeof window !== 'undefined' && (window as any).fbq) {
@@ -56,6 +56,9 @@ export default function Contact() {
             // Get attribution data from URL parameters
             const attributionData = getAttributionData();
             
+            // Get browser data (includes proper fbc handling)
+            const browserData = getBrowserData();
+            
             // Hash PII data for Meta API compliance
             const hashedEmail = await hashData(formData.email);
             const hashedPhone = await hashData(formData.phone);
@@ -64,17 +67,6 @@ export default function Contact() {
             const hashedFirstName = await hashData(firstName);
             const hashedLastName = await hashData(lastName);
             
-            // Debug logging for verification
-            console.log('🔐 Hash verification:', {
-                originalEmail: formData.email,
-                hashedEmail: hashedEmail,
-                originalPhone: formData.phone,
-                hashedPhone: hashedPhone,
-                firstName: firstName,
-                hashedFirstName: hashedFirstName,
-                lastName: lastName,
-                hashedLastName: hashedLastName
-            });
             
             // Prepare data for Meta Conversions API with proper format
             const eventData = {
@@ -89,9 +81,9 @@ export default function Contact() {
                     fn: [hashedFirstName], // Hashed first name
                     ln: [hashedLastName], // Hashed last name
                     client_ip_address: clientIp,
-                    client_user_agent: navigator.userAgent,
-                    fbc: getCookie('_fbc') || '',
-                    fbp: getCookie('_fbp') || ''
+                    client_user_agent: browserData.userAgent,
+                    fbc: browserData.fbc || '',
+                    fbp: browserData.fbp || ''
                 },
                 attribution_data: {
                     ad_id: attributionData.ad_id,
@@ -142,26 +134,15 @@ export default function Contact() {
                             first_name_hash: hashedFirstName,
                             last_name_hash: hashedLastName,
                             client_ip_address: clientIp,
-                            client_user_agent: navigator.userAgent,
-                            fbp: getCookie('_fbp') || '',
-                            fbc: getCookie('_fbc') || '',
+                            client_user_agent: browserData.userAgent,
+                            fbp: browserData.fbp || '',
+                            fbc: browserData.fbc || '',
                         },
                         custom_data: {
                             currency: 'NGN',
                             value: 50000,
                         },
                         event_source_url: window.location.href,
-                        source_info: {
-                            page_path: window.location.pathname,
-                            referrer: document.referrer || '',
-                            utm_source: attributionData.utm_source || '',
-                            utm_medium: attributionData.utm_medium || '',
-                            utm_campaign: attributionData.utm_campaign || '',
-                            utm_term: attributionData.utm_term || '',
-                            utm_content: attributionData.utm_content || '',
-                            fbclid: attributionData.fbclid || '',
-                            gclid: attributionData.gclid || '',
-                        },
                         meta_response: result,
                         additional_data: { 
                             action: 'form_submission', 
@@ -201,16 +182,6 @@ export default function Contact() {
             setIsSubmitting(false);
         }
     };
-
-   const getCookie = (name: string): string => {
-    if (typeof document === 'undefined') return '';
-    const value = `; ${document.cookie}`;
-    const parts = value.split(`; ${name}=`);
-    if (parts.length === 2) {
-      return parts.pop()?.split(';').shift() || '';
-    }
-    return '';
-  };
 
   const getClientIp = async (): Promise<string> => {
     try {

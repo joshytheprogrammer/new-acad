@@ -24,6 +24,7 @@ interface PaystackButtonProps {
   onClose: () => void;
   disabled?: boolean;
   leadData?: LeadData; // Add leadData prop for InitiateCheckout tracking
+  eventId?: string; // Pass the event ID from the form
 }
 
 const PaystackButton: React.FC<PaystackButtonProps> = ({
@@ -33,9 +34,13 @@ const PaystackButton: React.FC<PaystackButtonProps> = ({
   onClose,
   disabled,
   leadData,
+  eventId, // Destructure the eventId prop
 }) => {
   const [isReady, setIsReady] = useState(false);
   const [error, setError] = useState<string>("");
+  const [storedUserData, setStoredUserData] = useState<any>(null);
+  const [storedEventId, setStoredEventId] = useState<string>('');
+  const [storedSourceUrl, setStoredSourceUrl] = useState<string>('');
 
   const publicKey = process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY;
 
@@ -77,7 +82,13 @@ const PaystackButton: React.FC<PaystackButtonProps> = ({
 
     // Fire InitiateCheckout event when user clicks "ENROLL NOW"
     if (leadData) {
-      const initiateCheckoutEventId = generateEventId();
+      // Use the provided eventId or generate a new one as fallback
+      const initiateCheckoutEventId = eventId || generateEventId();
+      
+      console.log('🎯 Using eventId for InitiateCheckout:', {
+        eventId: initiateCheckoutEventId,
+        source: eventId ? 'provided from form' : 'generated as fallback'
+      });
       
       // 1. Frontend Pixel Event
       trackPixelEvent('InitiateCheckout', {
@@ -146,6 +157,52 @@ const PaystackButton: React.FC<PaystackButtonProps> = ({
           }
         };
 
+        // Store the checkout data in in-memory store for Purchase event
+        try {
+          const storePayload = {
+            eventId: initiateCheckoutEventId,
+            userData: conversionData.user_data,
+            sourceUrl: leadData.sourceUrl,
+            leadInfo: {
+              email: leadData.email,
+              name: leadData.name,
+              phone: leadData.phone,
+              fbp: leadData.fbp,
+              fbc: leadData.fbc,
+              userAgent: leadData.userAgent,
+              clientIp: leadData.clientIp
+            }
+          };
+
+          // Store in server memory
+          await fetch('/api/store-checkout-data', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(storePayload),
+          });
+
+          // Also store in sessionStorage as backup
+          if (typeof window !== 'undefined') {
+            sessionStorage.setItem(`checkout_${initiateCheckoutEventId}`, JSON.stringify(storePayload));
+            console.log('💾 Backup stored in sessionStorage for eventId:', initiateCheckoutEventId);
+          }
+
+          console.log('✅ Stored checkout data in memory for Purchase event');
+        } catch (storeError) {
+          console.warn('⚠️ Failed to store checkout data:', storeError);
+        }
+
+        // Legacy state storage (keeping for compatibility)
+        setStoredUserData(conversionData.user_data);
+        setStoredEventId(initiateCheckoutEventId);
+        setStoredSourceUrl(leadData.sourceUrl);
+        
+        console.log('💾 Stored user data for payment verification:', {
+          eventId: initiateCheckoutEventId,
+          userData: conversionData.user_data,
+          sourceUrl: leadData.sourceUrl
+        });
+
         // Send to our meta-conversion endpoint (credentials will be handled server-side)
         const conversionResponse = await fetch(`/api/meta-conversion`, {
           method: 'POST',
@@ -181,17 +238,6 @@ const PaystackButton: React.FC<PaystackButtonProps> = ({
                   currency: 'NGN',
                 },
                 event_source_url: leadData.sourceUrl,
-                source_info: {
-                  page_path: typeof window !== 'undefined' ? window.location.pathname : '',
-                  referrer: typeof document !== 'undefined' ? document.referrer : '',
-                  utm_source: attributionDataForSheet.utm_source || '',
-                  utm_medium: attributionDataForSheet.utm_medium || '',
-                  utm_campaign: attributionDataForSheet.utm_campaign || '',
-                  utm_term: attributionDataForSheet.utm_term || '',
-                  utm_content: attributionDataForSheet.utm_content || '',
-                  fbclid: attributionDataForSheet.fbclid || '',
-                  gclid: attributionDataForSheet.gclid || '',
-                },
                 meta_response: result,
                 additional_data: { 
                   form_data: { 
@@ -217,7 +263,40 @@ const PaystackButton: React.FC<PaystackButtonProps> = ({
     try {
       initializePayment({ 
         onSuccess: (reference) => {
-          onSuccess(reference);
+          // Retrieve backup data from sessionStorage
+          let backupData = null;
+          if (typeof window !== 'undefined') {
+            const backupKey = `checkout_${eventId || storedEventId}`;
+            const storedBackup = sessionStorage.getItem(backupKey);
+            if (storedBackup) {
+              try {
+                backupData = JSON.parse(storedBackup);
+                console.log('📦 Retrieved backup data from sessionStorage');
+              } catch (e) {
+                console.warn('⚠️ Failed to parse backup data from sessionStorage');
+              }
+            }
+          }
+
+          // Add the stored user data to the reference object for payment verification
+          const enhancedReference = {
+            ...reference,
+            originalUserData: storedUserData,
+            eventId: storedEventId,
+            eventSourceUrl: storedSourceUrl,
+            backupData: backupData // Include backup data
+          };
+          
+          console.log('💳 Payment successful, passing enhanced reference:', {
+            reference: reference.reference,
+            hasUserData: !!storedUserData,
+            eventId: storedEventId,
+            providedEventId: eventId,
+            eventIdMatch: storedEventId === eventId,
+            userDataKeys: storedUserData ? Object.keys(storedUserData) : []
+          });
+          
+          onSuccess(enhancedReference);
         }, 
         onClose: () => {
           onClose();

@@ -10,7 +10,7 @@ import Risk from "@/components/academy/summer/Risk";
 import Enrollment from "@/components/academy/summer/Enrollment";
 import FAQ from "@/components/academy/summer/FAQ";
 import Contact from "@/components/academy/summer/Contact";
-import { getAttributionData } from "@/lib/metaHelpers";
+import { getAttributionData, getBrowserData, generateEventId } from "@/lib/metaHelpers";
 
 // Get client IP address
 const getClientIp = async (): Promise<string> => {
@@ -24,21 +24,10 @@ const getClientIp = async (): Promise<string> => {
   }
 };
 
-// Helper to get cookies
-const getCookie = (name: string): string => {
-  if (typeof document === 'undefined') return '';
-  const value = `; ${document.cookie}`;
-  const parts = value.split(`; ${name}=`);
-  if (parts.length === 2) {
-    return parts.pop()?.split(';').shift() || '';
-  }
-  return '';
-};
-
 // Track PageView for academy main page
 const trackAcademyPageView = async () => {
   if (typeof window !== 'undefined' && (window as any).fbq) {
-    const eventId = `view_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const eventId = generateEventId();
     
     try {
       // Get client IP
@@ -47,8 +36,11 @@ const trackAcademyPageView = async () => {
       // Get attribution data from URL parameters using centralized function
       const attributionData = getAttributionData();
       
+      // Get browser data (includes proper fbc handling)
+      const browserData = getBrowserData();
+      
       // Fire Facebook Pixel PageView event
-      (window as any).fbq('track', 'PageView', {}, { eventID: eventId });
+      (window as any).fbq('track', 'PageView', {test_event_code: 'TEST56480'}, { eventID: eventId });
       
       // Send to Meta Conversions API with proper format
       const eventData = {
@@ -59,9 +51,9 @@ const trackAcademyPageView = async () => {
         event_source_url: window.location.href,
         user_data: {
           client_ip_address: clientIp,
-          client_user_agent: navigator.userAgent,
-          fbc: getCookie('_fbc') || '',
-          fbp: getCookie('_fbp') || '',
+          client_user_agent: browserData.userAgent,
+          fbc: browserData.fbc || '',
+          fbp: browserData.fbp || '',
         },
         attribution_data: {
           ad_id: attributionData.ad_id,
@@ -96,22 +88,11 @@ const trackAcademyPageView = async () => {
               event_time: Math.floor(Date.now() / 1000),
               user_data: {
                 client_ip_address: clientIp,
-                client_user_agent: navigator.userAgent,
-                fbp: getCookie('_fbp') || '',
-                fbc: getCookie('_fbc') || '',
+                client_user_agent: browserData.userAgent,
+                fbp: browserData.fbp || '',
+                fbc: browserData.fbc || '',
               },
               event_source_url: window.location.href,
-              source_info: {
-                page_path: window.location.pathname,
-                referrer: document.referrer || '',
-                utm_source: attributionData.utm_source || '',
-                utm_medium: attributionData.utm_medium || '',
-                utm_campaign: attributionData.utm_campaign || '',
-                utm_term: attributionData.utm_term || '',
-                utm_content: attributionData.utm_content || '',
-                fbclid: attributionData.fbclid || '',
-                gclid: attributionData.gclid || '',
-              },
               meta_response: result,
             }),
           });

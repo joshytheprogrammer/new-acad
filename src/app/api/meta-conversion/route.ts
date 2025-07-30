@@ -70,6 +70,38 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Handle attribution data - convert strings to numbers for Meta API
+    const attributionData: any = {};
+    if (eventData.attribution_data) {
+      if (eventData.attribution_data.ad_id) {
+        // Try to convert to number, but handle large number precision issues
+        const adIdStr = String(eventData.attribution_data.ad_id);
+        if (adIdStr.length <= 15) {
+          // Safe to convert to number (JavaScript safe integer limit)
+          attributionData.ad_id = Number(adIdStr);
+        } else {
+          // Keep as string for very large numbers to preserve precision
+          attributionData.ad_id = adIdStr;
+        }
+      }
+      if (eventData.attribution_data.adset_id) {
+        const adsetIdStr = String(eventData.attribution_data.adset_id);
+        if (adsetIdStr.length <= 15) {
+          attributionData.adset_id = Number(adsetIdStr);
+        } else {
+          attributionData.adset_id = adsetIdStr;
+        }
+      }
+      if (eventData.attribution_data.campaign_id) {
+        const campaignIdStr = String(eventData.attribution_data.campaign_id);
+        if (campaignIdStr.length <= 15) {
+          attributionData.campaign_id = Number(campaignIdStr);
+        } else {
+          attributionData.campaign_id = campaignIdStr;
+        }
+      }
+    }
+
     // Prepare the payload for Meta Conversions API
     const payload: any = {
       data: [
@@ -81,12 +113,25 @@ export async function POST(request: NextRequest) {
           user_data: eventData.user_data,
           custom_data: eventData.custom_data,
           event_source_url: eventData.event_source_url,
-          attribution_data: eventData.attribution_data,
+          ...(Object.keys(attributionData).length > 0 && { attribution_data: attributionData }),
           original_event_data: eventData.original_event_data,
         }
       ],
-      // test_event_code: 'TEST92428',
+      test_event_code: 'TEST56480',
     };
+
+    console.log('📊 Meta conversion received user_data:', {
+      hasEmail: !!(eventData.user_data?.em?.length),
+      hasPhone: !!(eventData.user_data?.ph?.length),
+      hasName: !!(eventData.user_data?.fn?.length), 
+      hasIP: !!(eventData.user_data?.client_ip_address),
+      hasUserAgent: !!(eventData.user_data?.client_user_agent),
+      hasFbp: !!(eventData.user_data?.fbp),
+      hasFbc: !!(eventData.user_data?.fbc),
+      fullUserData: eventData.user_data
+    });
+
+    console.log('Sending Meta conversion event:', payload);
 
     // Send to Meta Conversions API
     const metaResponse = await fetch(

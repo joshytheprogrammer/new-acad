@@ -54,12 +54,12 @@ export async function POST(request: NextRequest) {
         customer: transaction.customer
       });
 
-      // Check if this payment has already been processed by webhook to prevent duplicates
+      // Check if this payment has already been processed to prevent duplicates
       if (isPaymentProcessed(reference)) {
-        console.log('⚠️ Payment already processed by webhook, skipping Purchase event:', reference);
+        console.log('⚠️ Payment already processed, skipping duplicate Purchase event:', reference);
         return NextResponse.json({
           success: true,
-          message: 'Payment verified successfully (already processed by webhook)',
+          message: 'Payment verified successfully (already processed)',
           transaction: {
             reference: transaction.reference,
             amount: transaction.amount / 100,
@@ -291,7 +291,7 @@ export async function POST(request: NextRequest) {
         console.error('Error sending Meta Purchase conversion:', error);
       }
 
-      // Mark this payment as processed to prevent webhook duplicates
+      // Mark this payment as processed to prevent duplicates
       markPaymentAsProcessed(reference);
       console.log('📝 Marked payment as processed:', reference);
 

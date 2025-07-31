@@ -1,6 +1,6 @@
 /**
  * Payment deduplication utility to prevent duplicate Purchase events
- * between webhook and frontend verification endpoints
+ * from multiple verification attempts
  */
 
 // In-memory store to track processed payments

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { generateEventId } from '@/lib/metaHelpers';
+import { isPaymentProcessed, markPaymentAsProcessed } from '@/lib/paymentDeduplication';
 
 interface PaystackWebhookData {
   event: string;
@@ -55,6 +56,16 @@ export async function POST(request: NextRequest) {
 
     const { data: paymentData } = webhookData;
     const customerEmail = paymentData.customer.email;
+    const paymentReference = paymentData.reference;
+
+    // Check if this payment has already been processed to prevent duplicates
+    if (isPaymentProcessed(paymentReference)) {
+      console.log('⚠️ Payment already processed by webhook, skipping duplicate:', paymentReference);
+      return NextResponse.json({ 
+        message: 'Payment already processed',
+        reference: paymentReference 
+      });
+    }
 
     console.log('Processing successful payment:', {
       reference: paymentData.reference,
@@ -119,9 +130,9 @@ export async function POST(request: NextRequest) {
       }, { status: 400 });
     }
 
-    // Generate unique event ID for Purchase event
-    const purchaseEventId = generateEventId();
-    console.log('🎯 Generated unique eventId for Purchase event:', purchaseEventId);
+    // Use the SAME event ID from InitiateCheckout for Purchase event (for proper deduplication)
+    const purchaseEventId = leadData.eventId; // Reuse the original InitiateCheckout event ID
+    console.log('🎯 Using original InitiateCheckout eventId for Purchase event:', purchaseEventId);
 
     if (leadData.clientIp) metaUserData.client_ip_address = leadData.clientIp;
     if (leadData.userAgent) metaUserData.client_user_agent = leadData.userAgent;
@@ -199,6 +210,10 @@ export async function POST(request: NextRequest) {
       eventId: leadData.eventId,
       metaEventSent: metaResponse.ok,
     });
+
+    // Mark this payment as processed to prevent future duplicates
+    markPaymentAsProcessed(paymentReference);
+    console.log('📝 Marked payment as processed:', paymentReference);
 
     return NextResponse.json({ 
       message: 'Webhook processed successfully',

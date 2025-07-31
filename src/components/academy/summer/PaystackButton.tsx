@@ -141,12 +141,12 @@ const PaystackButton: React.FC<PaystackButtonProps> = ({
 
     // Fire InitiateCheckout event when user clicks "ENROLL NOW" (only once)
     if (leadData) { // User data is required
-      // Generate unique event ID for InitiateCheckout
-      const initiateCheckoutEventId = generateEventId();
+      // Use the SAME event ID from the form (don't generate new one)
+      const initiateCheckoutEventId = leadData.eventId;
       
-      console.log('🎯 Generated unique eventId for InitiateCheckout:', {
+      console.log('🎯 Using form eventId for InitiateCheckout:', {
         eventId: initiateCheckoutEventId,
-        source: 'generated for InitiateCheckout'
+        source: 'reused from form leadData'
       });
       
       // Mark as initiated to prevent duplicates

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { checkoutDataStore } from '@/lib/checkoutDataStore';
 import { generateEventId, getTestEventCode } from '@/lib/metaHelpers';
+import { isPaymentProcessed, markPaymentAsProcessed } from '@/lib/paymentDeduplication';
 
 export async function POST(request: NextRequest) {
   try {
@@ -52,6 +53,22 @@ export async function POST(request: NextRequest) {
         amount: transaction.amount / 100,
         customer: transaction.customer
       });
+
+      // Check if this payment has already been processed by webhook to prevent duplicates
+      if (isPaymentProcessed(reference)) {
+        console.log('⚠️ Payment already processed by webhook, skipping Purchase event:', reference);
+        return NextResponse.json({
+          success: true,
+          message: 'Payment verified successfully (already processed by webhook)',
+          transaction: {
+            reference: transaction.reference,
+            amount: transaction.amount / 100,
+            status: transaction.status,
+            paidAt: transaction.paid_at,
+            customer: transaction.customer,
+          },
+        });
+      }
 
       // Send Purchase event to Meta using the SAME data as InitiateCheckout
       try {
@@ -195,14 +212,21 @@ export async function POST(request: NextRequest) {
             });
           }
 
-          // Generate unique event ID for Purchase event
-          const purchaseEventId = generateEventId();
+          // Use the SAME event ID from InitiateCheckout for Purchase event (for proper deduplication)
+          const purchaseEventId = eventId; // Reuse the InitiateCheckout event ID
+          
+          console.log('🎯 EVENT ID TRACING - Verify Payment:', {
+            originalEventId: eventId,
+            purchaseEventId: purchaseEventId,
+            eventIdsMatch: eventId === purchaseEventId,
+            transactionReference: transaction.reference
+          });
           
           const conversionData = {
             event_name: 'Purchase',
             event_time: Math.floor(Date.now() / 1000),
             action_source: 'website',
-            event_id: purchaseEventId, // Use unique Purchase event ID
+            event_id: purchaseEventId, // Use same event ID as InitiateCheckout for deduplication
             event_source_url: finalSourceUrl,
             user_data: userData,
             custom_data: {
@@ -273,6 +297,10 @@ export async function POST(request: NextRequest) {
       } catch (error) {
         console.error('Error sending Meta Purchase conversion:', error);
       }
+
+      // Mark this payment as processed to prevent webhook duplicates
+      markPaymentAsProcessed(reference);
+      console.log('📝 Marked payment as processed:', reference);
 
       return NextResponse.json({
         success: true,

@@ -16,6 +16,12 @@ function SuccessContent() {
   useEffect(() => {
     // Fire deduplicated Purchase pixel event for frontend tracking
     if (eventId && !isTracked) {
+      console.log('🎯 EVENT ID TRACING - Success Page:', {
+        eventIdFromUrl: eventId,
+        paymentRefFromUrl: paymentRef,
+        aboutToFirePixelEvent: true
+      });
+      
       trackPixelEvent('Purchase', {
         value: 50000,
         currency: 'NGN',
@@ -24,6 +30,8 @@ function SuccessContent() {
         content_ids: ['summer-academy-2025'],
         num_items: 1
       }, eventId); // Same event_id used in Conversions API for deduplication
+      
+      console.log('✅ Purchase pixel event fired with eventId:', eventId);
       
       setIsTracked(true);
     }

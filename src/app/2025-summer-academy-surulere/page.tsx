@@ -100,29 +100,7 @@ const trackAcademyPageView = async () => {
 
       if (response.ok) {
         const result = await response.json();
-        
-        // Log to SheetDB for comprehensive tracking
-        try {
-          await fetch('/api/log-meta-event', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              event_name: 'PageView',
-              event_id: eventId,
-              event_time: Math.floor(Date.now() / 1000),
-              user_data: {
-                client_ip_address: clientIp,
-                client_user_agent: browserData.userAgent,
-                fbp: browserData.fbp || '',
-                fbc: browserData.fbc || '',
-              },
-              event_source_url: window.location.href,
-              meta_response: result,
-            }),
-          });
-        } catch (sheetError) {
-          console.warn('⚠️ PageView sheet logging failed:', sheetError);
-        }
+        console.log('✅ PageView event sent to Meta successfully:', result);
       } else {
         const errorText = await response.text();
         console.error('❌ Failed to send PageView event:', response.status, errorText);

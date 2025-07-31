@@ -5,10 +5,12 @@ import Hotjar from '@hotjar/browser';
 
 const HotjarInit = () => {
   useEffect(() => {
-    const siteId = 6481039;
+    const siteId = process.env.NEXT_PUBLIC_HOTJAR_SITE_ID;
     const hotjarVersion = 6;
     
-    Hotjar.init(siteId, hotjarVersion);
+    if (siteId) {
+      Hotjar.init(Number(siteId), hotjarVersion);
+    }
   }, []);
 
   return null;

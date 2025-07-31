@@ -1,140 +1,63 @@
-"use client";
-import { useEffect, useState } from "react";
+import Image from "next/image";
 
 export default function Risk() {
-    const [timeLeft, setTimeLeft] = useState({
-        days: "00",
-        hours: "00",
-        minutes: "00",
-        seconds: "00",
-      });
-
-      const scrollToEnrollment = () => {
-        const enrollmentSection = document.getElementById('enrollment');
-        if (enrollmentSection) {
-          enrollmentSection.scrollIntoView({ 
-            behavior: 'smooth',
-            block: 'start'
-          });
-        }
-      };
-    
-      useEffect(() => {
-        const timer = setInterval(() => {
-          const targetDate = new Date("2025-08-05T23:59:59");
-          const now = new Date();
-          const difference = targetDate.getTime() - now.getTime();
-    
-          const format = (num: number) => num.toString().padStart(2, "0");
-    
-          if (difference > 0) {
-            const days = Math.floor(difference / (1000 * 60 * 60 * 24));
-            const hours = Math.floor((difference / (1000 * 60 * 60)) % 24);
-            const minutes = Math.floor((difference / 1000 / 60) % 60);
-            const seconds = Math.floor((difference / 1000) % 60);
-    
-            setTimeLeft({
-              days: format(days),
-              hours: format(hours),
-              minutes: format(minutes),
-              seconds: format(seconds),
-            });
-          } else {
-            setTimeLeft({ days: "00", hours: "00", minutes: "00", seconds: "00" });
-            clearInterval(timer);
-          }
-        }, 1000);
-    
-        return () => clearInterval(timer);
-      }, []);
-
-
-    return (
-        <section className="bg-white py-24 px-4 text-center text-gray-800">
-        <div className="max-w-4xl mx-auto">
-          <h2 className="font-bebas text-4xl md:text-5xl font-bold tracking-tight text-gray-900">
-            Your Future is Secured:{" "}
-            <span className="text-chambray-600">
-              Zero Risk. Massive Rewards.
-            </span>
-          </h2>
-          <div className="mt-12 bg-gradient-to-r from-chambray-50 to-blue-50 border-2 border-chambray-200 rounded-xl p-8 shadow-lg space-y-12">
-            <div className=" flex flex-col md:flex-row items-center gap-8">
-              <div className="flex-shrink-0">
-              <svg
-                className="w-24 h-24 text-chambray-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
-                ></path>
-              </svg>
-            </div>
-            <div className="text-left">
-              <h3 className="font-bebas text-3xl font-bold leading-snug text-center lg:text-left text-gray-900">
-                Our 10-Day Digital Confidence Guarantee
-              </h3>
-              <p className="mt-2 text-gray-700 text-lg text-center lg:text-left">
-                If, after the first 10 days of the program, you don&apos;t see
-                tangible progress in your child&apos;s skills and a noticeable
-                boost in their digital confidence, we&apos;ll give you a full
-                refund. No questions asked. The risk is entirely on us.
-              </p>
-            </div>
-            </div>
-            <div>
-              <h3 className="font-bebas text-4xl md:text-5xl font-bold text-gray-900 uppercase">
-                Don&apos;t Wait.{" "}
-                <span className="text-red-500 block mt-6">Tomorrow May Be Too Late!</span>
-              </h3>
-              <div className="mt-6 flex items-center justify-center gap-4 md:gap-8">
-                <div className="text-center">
-                  <p className="font-bebas text-5xl md:text-7xl text-red-500 font-bold">
-                    {timeLeft.days}
-                  </p>
-                  <p className="text-sm uppercase tracking-wider text-gray-700">Days</p>
-                </div>
-                <div className="text-center">
-                  <p className="font-bebas text-5xl md:text-7xl text-red-500 font-bold">
-                    {timeLeft.hours}
-                  </p>
-                  <p className="text-sm uppercase tracking-wider text-gray-700">Hours</p>
-                </div>
-                <div className="text-center">
-                  <p className="font-bebas text-5xl md:text-7xl text-red-500 font-bold">
-                    {timeLeft.minutes}
-                  </p>
-                  <p className="text-sm uppercase tracking-wider text-gray-700">Mins</p>
-                </div>
-                <div className="text-center">
-                  <p className="font-bebas text-5xl md:text-7xl text-red-500 font-bold">
-                    {timeLeft.seconds}
-                  </p>
-                  <p className="text-sm uppercase tracking-wider text-gray-700">Secs</p>
-                </div>
-            </div>
-            <p className="mt-4 text-xl font-semibold text-gray-800">
-              ONLY <span className="text-red-500 font-bold">23 SLOTS</span> LEFT
-              (SURULERE)! THESE SPOTS DISAPPEAR FAST!
+  return (
+    <section className="py-16 px-4 lg:px-8 xl:px-24 relative overflow-hidden">
+      <div className="container mx-auto px-4 relative z-10">
+        <div className="flex flex-col lg:flex-row items-center justify-between gap-12">
+          {/* Left Content */}
+          <div className="w-full lg:w-1/2">
+            <h2 className="text-4xl lg:text-5xl font-bold mb-6 leading-tight">
+              Your Future is Secured:{" "}
+              <span className="text-red-500">Zero Risk.</span>{" "}
+              <span className="text-purple-600">Massive Rewards.</span>
+            </h2>
+            
+            <p className="text-gray-600 text-lg mb-8 leading-relaxed">
+              We know how important this decision is. That's why we've removed all the risk. If, after 10 days, you don't see real progress in your child's digital skills and confidence, we'll refund you in full. No stress. No hidden conditions.
             </p>
             
-            {/* CTA to scroll to enrollment */}
-            <div className="mt-8">
-              <button 
-                onClick={scrollToEnrollment}
-                className="inline-block bg-chambray-700 hover:bg-chambray-800 text-white font-bold py-4 px-8 rounded-lg text-xl transition-colors duration-300"
-              >
-                SECURE YOUR SPOT NOW!
-              </button>
-            </div>
+            {/* Features List */}
+            <div className="space-y-4">
+              <div className="flex items-center gap-3">
+                <div className="w-6 h-6 bg-yellow-400 rounded-full flex items-center justify-center flex-shrink-0">
+                  <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <span className="text-gray-700 text-lg font-medium">No questions asked</span>
+              </div>
+              
+              <div className="flex items-center gap-3">
+                <div className="w-6 h-6 bg-yellow-400 rounded-full flex items-center justify-center flex-shrink-0">
+                  <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <span className="text-gray-700 text-lg font-medium">Full refund within 10 days</span>
+              </div>
+              
+              <div className="flex items-center gap-3">
+                <div className="w-6 h-6 bg-yellow-400 rounded-full flex items-center justify-center flex-shrink-0">
+                  <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <span className="text-gray-700 text-lg font-medium">No risk, all reward</span>
+              </div>
             </div>
           </div>
+        <div className="w-full lg:w-1/2 flex justify-center">
+          <Image
+                src="/images/secure.png"
+                alt="Shield with checkmark"
+                width={500}
+                height={500}
+                className=""
+              />
         </div>
-      </section>
-    )
+        </div>
+      </div>
+    </section>
+  );
 }

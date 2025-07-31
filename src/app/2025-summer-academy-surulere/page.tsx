@@ -145,7 +145,7 @@ export default function Page() {
           height="1" 
           width="1" 
           style={{ display: 'none' }}
-          src="https://www.facebook.com/tr?id=776602458123489&ev=PageView&noscript=1"
+          src={`https://www.facebook.com/tr?id=${process.env.NEXT_PUBLIC_META_PIXEL_ID}&ev=PageView&noscript=1`}
           alt=""
         />
       </noscript>
@@ -154,8 +154,8 @@ export default function Page() {
       <div className="fixed top-0 left-0 w-full text-white font-semibold bg-gradient-to-r from-[#FF4671] to-[#FFBC33] text-center p-3 z-50 lg:text-lg !rounded-none flex items-center justify-center gap-4">
         <Star className="w-5 h-5 text-white" fill="currentColor" />
         <span className="text-lg">OFFER ENDS AUGUST 5TH!</span>
-        <span> | </span>
-        <span>LESS THAN 30 SLOTS LEFT (SURULERE)!</span>
+        <span className='hidden lg:inline'> | </span>
+        <span className='hidden lg:inline'>LESS THAN 30 SLOTS LEFT (SURULERE)!</span>
         <Star className="w-5 h-5 text-white" fill="currentColor" />
       </div>
 

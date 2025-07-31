@@ -209,8 +209,6 @@ export default function EnhancedEnrollmentForm({
         // Fire ViewContent event when user proceeds to payment section
         // 1. Frontend Pixel Event
         trackPixelEvent('ViewContent', {
-          value: 50000,
-          currency: 'NGN',
           content_name: '2025 Summer Academy - Surulere',
           content_category: 'Education',
           content_ids: ['summer-academy-2025'],

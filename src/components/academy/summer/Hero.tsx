@@ -62,24 +62,16 @@ export default function Hero(){
      <section
         className="relative flex items-center justify-center text-center p-4 py-32 bg-white overflow-hidden"
       >
-        {/* Decorative Icons */}
-        {/* <Laptop className="absolute top-20 -left-4 w-32 h-32 text-blue-200 opacity-80 -rotate-12 z-0" />
-        <BookOpen className="hidden md:block absolute top-10 right-1/4 w-20 h-20 text-pink-200 opacity-60 rotate-6 z-0" />
-        <CodeXml className="absolute bottom-12 -right-8 w-36 h-36 text-purple-200 opacity-80 rotate-12 z-0" />
-        <Sun className="hidden md:block absolute bottom-10 left-1/4 w-16 h-16 text-yellow-200 opacity-70 z-0" />
-        <GraduationCap className="hidden lg:block absolute top-24 left-[15%] w-24 h-24 text-green-200 opacity-70 -rotate-6 z-0" />
-        <PartyPopper className="hidden lg:block absolute bottom-20 right-[20%] w-16 h-16 text-red-200 opacity-60 rotate-3 z-0" /> */}
-
-        <Image src="/images/paint.png" alt="Decorative Cap" width={100} height={100} className="absolute top-8 left-100 w-32 h-32 -rotate-12 z-0" />
-        <Image src="/images/cap.png" alt="Decorative Cap" width={100} height={100} className="absolute top-20 right-28 w-32 h-32 -rotate-12 z-0" />
-        <Image src="/images/laptop.png" alt="Decorative Laptop" width={100} height={100} className="absolute top-80 left-24 w-32 h-32 rotate-12 z-0" />
-        <Image src="/images/chat.png" alt="Decorative Book" width={100} height={100} className="absolute top-100 right-1/4 w-20 h-20 rotate-6 z-0" />
+        <Image src="/images/paint.png" alt="Decorative Cap" width={100} height={100} className="absolute top-8 left-100 w-32 h-32 -rotate-12 z-0 opacity-50" />
+        <Image src="/images/cap.png" alt="Decorative Cap" width={100} height={100} className="absolute top-20 right-28 w-32 h-32 -rotate-12 z-0 opacity-50" />
+        <Image src="/images/laptop.png" alt="Decorative Laptop" width={100} height={100} className="absolute top-80 left-24 w-32 h-32 rotate-12 z-0 opacity-50" />
+        <Image src="/images/chat.png" alt="Decorative Book" width={100} height={100} className="absolute top-100 right-1/4 w-20 h-20 rotate-6 z-0 opacity-50" />
         <div className="relative z-10 max-w-4xl space-y-8">
           <h1 className="font-bebas text-4xl md:text-6xl lg:text-7xl font-bold text-chambray-800">
               Don't Waste Another Summer!!!
           </h1>
 
-          <div className="text-black text-xl">
+          <div className="text-black lg:text-xl">
               Transform Your Child&apos;s Screen Time Into Skill Time Before
               August 5th!
           </div>
@@ -104,7 +96,7 @@ export default function Hero(){
                   { label: "SECONDS", value: timeLeft.seconds },
                 ].map((unit) => (
                   <div key={unit.label} className="flex flex-col items-center">
-                    <div className="w-24 h-24 md:w-24 md:h-28 bg-black rounded-2xl shadow-lg flex items-center justify-center select-none">
+                    <div className="w-20 h-24 md:w-24 md:h-28 bg-black rounded-2xl shadow-lg flex items-center justify-center select-none">
                       <span className="font-bebas text-5xl md:text-7xl text-white font-extrabold tracking-tighter">
                         {unit.value}
                       </span>
@@ -115,7 +107,7 @@ export default function Hero(){
               </div>
             <p className="font-semibold bg-neutral-900 rounded-full py-3 px-4 flex items-center justify-center gap-4 max-w-xl mx-auto text-white">
               <Image src="/images/warning.svg" alt="Limited Slots" width={18} height={18} className="inline-block" />
-              <span>ONLY 23 SLOTS LEFT (SURULERE) - THESE SPOTS DISAPPEAR FAST!</span>
+              <span>ONLY 23 SLOTS LEFT (SURULERE) <span className="hidden lg:inline">- THESE SPOTS DISAPPEAR FAST!</span></span>
             </p>
           </div>
           </div>

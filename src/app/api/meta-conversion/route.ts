@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
+import { getTestEventCode } from '@/lib/metaHelpers';
 
 // Helper function to get client IP address (prioritizes IPv6)
 function getClientIP(request: NextRequest): string {
@@ -149,6 +150,40 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Determine test event code - check multiple sources in priority order
+    let testEventCode: string | undefined = undefined;
+    
+    // 1. Check URL parameters from event_source_url or referer
+    const sourceUrl = eventData.event_source_url || request.headers.get('referer') || '';
+    if (sourceUrl) {
+      const detectedTestCode = getTestEventCode(sourceUrl);
+      if (detectedTestCode) {
+        testEventCode = detectedTestCode;
+        console.log('🧪 Using test event code from URL:', testEventCode);
+      }
+    }
+    
+    // 2. Check if test_event_code was explicitly passed in the request body
+    if (!testEventCode && eventData.test_event_code) {
+      testEventCode = eventData.test_event_code;
+      console.log('🧪 Using test event code from request body:', testEventCode);
+    }
+    
+    // Log the test mode status
+    if (testEventCode) {
+      console.log('🧪 META TEST MODE ENABLED:', {
+        testEventCode,
+        eventName: eventData.event_name,
+        eventId: eventData.event_id,
+        sourceUrl: sourceUrl || 'N/A'
+      });
+    } else {
+      console.log('🏭 META PRODUCTION MODE:', {
+        eventName: eventData.event_name,
+        eventId: eventData.event_id
+      });
+    }
+
     // Prepare the payload for Meta Conversions API
     const payload: any = {
       data: [
@@ -164,7 +199,8 @@ export async function POST(request: NextRequest) {
           original_event_data: eventData.original_event_data,
         }
       ],
-      test_event_code: 'TEST62071',
+      // Only include test_event_code if we're in test mode
+      ...(testEventCode && { test_event_code: testEventCode }),
     };
 
     console.log('📊 Meta conversion received user_data:', {

@@ -1,100 +1,119 @@
+import { Briefcase, InfinityIcon, Smartphone, ArrowRight } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import React from "react";
+
+interface ValueCardProps {
+    icon: React.ReactNode;
+    title: string;
+    description: string;
+    value: string;
+    bgColor: string;
+    iconColor: string;
+}
+
+const ValueCard = ({ icon, title, description, value, bgColor, iconColor }: ValueCardProps) => (
+    <div className={`rounded-xl p-6 text-left ${bgColor} text-black`}>
+      <div className={`w-12 h-12 rounded-full flex items-center justify-center ${iconColor} bg-white mb-4`}>
+        {icon}
+      </div>
+      <h3 className="font-bold text-lg">{title}</h3>
+      <p className="text-sm mt-1">{description}</p>
+      <p className="font-bold text-2xl mt-4">{value}</p>
+    </div>
+  );
+
 export default function Offer() {
   return (
-    <section className="bg-sand-black py-24 px-4 text-center">
-        <div className="max-w-4xl mx-auto">
-          <h2 className="font-bebas text-4xl md:text-5xl font-bold tracking-tight text-white">
-            The <span className="text-chambray-600">Unbeatable Value</span>{" "}
-            You&apos;re Getting This Summer
-          </h2>
-          <div className="mt-16 bg-black/20 rounded-lg shadow-lg p-8">
-            <div className="divide-y !rounded-none divide-gray-700">
-              {/* Value Stack Item */}
-              <div className="py-6 flex flex-col md:flex-row items-center justify-between !rounded-none">
-                <div className="text-left">
-                  <h3 className="font-bebas text-2xl text-white">
-                    Expert-Led Summer Camp
-                  </h3>
-                  <p className="mt-1 text-gray-400">
-                    Web Dev or Graphic Design Track
-                  </p>
-                </div>
-                <p className="font-satoshi text-xl font-bold text-chambray-600 mt-2 md:mt-0 !rounded-none">
-                  Value: ₦150,000
-                </p>
-              </div>
-              {/* Value Stack Item */}
-              <div className="py-6 flex flex-col md:flex-row items-center justify-between !rounded-none">
-                <div className="text-left">
-                  <h3 className="font-bebas text-2xl text-white">
-                    Bonus 1: Digital Portfolio Kit
-                  </h3>
-                  <p className="mt-1 text-gray-400">
-                    Create a real project to showcase skills
-                  </p>
-                </div>
-                <p className="font-satoshi text-xl font-bold text-chambray-600 mt-2 md:mt-0 !rounded-none">
-                  Value: ₦30,000
-                </p>
-              </div>
-              {/* Value Stack Item */}
-              <div className="py-6 flex flex-col md:flex-row items-center justify-between !rounded-none">
-                <div className="text-left">
-                  <h3 className="font-bebas text-2xl text-white">
-                    Bonus 2: Post-Camp Digital Courses
-                  </h3>
-                  <p className="mt-1 text-gray-400">
-                    Lifetime access to advanced material
-                  </p>
-                </div>
-                <p className="font-satoshi text-xl font-bold text-chambray-600 mt-2 md:mt-0 !rounded-none">
-                  Value: ₦100,000
-                </p>
-              </div>
-              {/* Value Stack Item */}
-              <div className="py-6 flex flex-col md:flex-row items-center justify-between !rounded-none">
-                <div className="text-left">
-                  <h3 className="font-bebas text-2xl text-white">
-                    Bonus 3: Future-Proof Parent Guide
-                  </h3>
-                  <p className="mt-1 text-gray-400">
-                    Support your child&apos;s digital journey
-                  </p>
-                </div>
-                <p className="font-satoshi text-xl font-bold text-chambray-600 mt-2 md:mt-0 !rounded-none">
-                  Value: ₦15,000
-                </p>
-              </div>
-            </div>
-            {/* Total Value & Price Reveal */}
-            <div className="mt-12 pt-8 border-t !rounded-none border-gray-700">
-              <p className="font-bebas text-2xl text-red-400 line-through">
-                Total Real-World Value: Over ₦300,000
-              </p>
-              <p className="font-bebas font-semibold text-5xl md:text-6xl text-chambray-600 mt-4">
-                Yours for Just ₦50,000!
-              </p>
-            </div>
-          </div>
-          {/* Laptop Prize */}
-          <div className="mt-12 flex flex-col lg:flex-row items-center justify-center gap-4 bg-black/20 p-4 rounded-lg">
-            <svg
-              className="w-10 h-10 text-chambray-600"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-              ></path>
-            </svg>
-            <p className="font-bebas text-xl font-bold text-white">
-              PLUS: The Most Improved Student Wins a Brand New LAPTOP!
-            </p>
-          </div>
+    <section className="py-20 px-4 lg:px-8 xl:px-24 relative overflow-hidden bg-white">
+      <div className="relative">
+        <h2 className="text-3xl md:text-5xl font-bold">
+          The Unbeatable Value
+          <br />
+          <span className="text-4xl md:text-6xl text-chambray-600">You&apos;re Getting This Summer</span>
+        </h2>
+        {/* <div className="absolute -top-10 right-0">
+            <Image src="/images/swirl-arrow.svg" alt="arrow" width={80} height={80} />
+        </div> */}
+
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mt-12">
+            <ValueCard 
+                icon={<Briefcase size={24} />}
+                title="Expert-Led Summer Camp"
+                description="Learn from expert instructors. Build projects that last!"
+                value="₦150,000"
+                bgColor="bg-pink-200/20 backdrop-blur-sm border border-pink-300/50"
+                iconColor="text-pink-500"
+            />
+            <ValueCard 
+                icon={<Briefcase size={24} />}
+                title="Digital Portfolio Kit"
+                description="Create a real project to showcase to future employers."
+                value="₦30,000"
+                bgColor="bg-yellow-200/20 backdrop-blur-sm border border-yellow-300/50"
+                iconColor="text-yellow-500"
+            />
+            <ValueCard 
+                icon={<InfinityIcon size={24} />}
+                title="Lifetime Course Access"
+                description="Access advanced materials after Camp."
+                value="₦100,000"
+                bgColor="bg-purple-200/20 backdrop-blur-sm border border-purple-300/50"
+                iconColor="text-purple-500"
+            />
+            <ValueCard 
+                icon={<Smartphone size={24} />}
+                title="Future-Proof Parent Guide"
+                description="Support your child's digital journey with our resources."
+                value="₦15,000"
+                bgColor="bg-indigo-200/20 backdrop-blur-sm border border-indigo-300/50"
+                iconColor="text-indigo-500"
+            />
         </div>
-      </section>
+
+        <div className="mt-8 bg-chambray-600/20 backdrop-blur-sm border border-cyan-300/50 rounded-lg py-4 px-8 text-center">
+            <p className="text-3xl font-bold text-black">Total Real-World Value: <span className="text-chambray-600">₦300,000+</span></p>
+        </div>
+
+        <div className="mt-8 bg-sand-black text-center border border-gray-700 rounded-3xl p-8 md:p-12 relative">
+            <div className="absolute -top-8 left-1/2 -translate-x-1/2">
+                <div className="w-16 h-16 bg-red-500 rounded-full flex items-center justify-center animate-pulse">
+                    <span className="text-5xl">💥</span>
+                </div>
+            </div>
+             <div className="absolute -top-8 right-10">
+                <div className="w-16 h-16 bg-red-500 rounded-full flex items-center justify-center animate-pulse">
+                    <span className="text-5xl">💥</span>
+                </div>
+            </div>
+
+            <p className="text-3xl md:text-4xl text-white">All can be yours for Just</p>
+            
+            <div className="my-6">
+                <div className="inline-block bg-gradient-to-r from-green-400 to-teal-400 rounded-2xl px-12 py-4 shadow-lg">
+                    <p className="text-5xl md:text-7xl font-black text-white tracking-wider">₦50,000!</p>
+                </div>
+            </div>
+
+            <p className="text-4xl font-bold text-chambray-600">+</p>
+
+            <p className="text-2xl md:text-3xl font-semibold mt-4">The Most Improved Student Wins a Brand New LAPTOP!</p>
+            
+            <div className="relative mt-8 w-full max-w-md mx-auto">
+                <Image src="/images/laptop2.png" alt="Laptop prize" width={400} height={250} className="mx-auto" />
+                <div className="absolute -bottom-4 -left-4 text-5xl text-pink-500">X</div>
+                <div className="absolute -top-4 -right-4 w-20 h-20 border-4 border-yellow-400 rounded-full"></div>
+            </div>
+
+            <div className="mt-12">
+                <Link href="/2025-summer-academy-surulere/checkout" className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-bold py-4 px-8 rounded-full text-lg shadow-lg hover:scale-105 transition-transform">
+                    Secure Your Child&apos;s Spot
+                    <ArrowRight size={20} />
+                </Link>
+            </div>
+        </div>
+      </div>
+    </section>
   );
 }
+

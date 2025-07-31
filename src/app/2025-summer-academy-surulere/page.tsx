@@ -10,7 +10,7 @@ import Risk from "@/components/academy/summer/Risk";
 import Enrollment from "@/components/academy/summer/Enrollment";
 import FAQ from "@/components/academy/summer/FAQ";
 import Contact from "@/components/academy/summer/Contact";
-import { getAttributionData, getBrowserData, generateEventId } from "@/lib/metaHelpers";
+import { getAttributionData, getBrowserData, generateEventId, getTestEventCode } from "@/lib/metaHelpers";
 import { Star } from 'lucide-react';
 
 // Get client IP address (prioritizes IPv6)
@@ -54,9 +54,18 @@ const trackAcademyPageView = async () => {
       // Get browser data (includes proper fbc handling)
       const browserData = getBrowserData();
       
+      // Check for test mode from URL parameters
+      const testEventCode = getTestEventCode();
+      
+      if (testEventCode) {
+        console.log('🧪 PageView - Test mode detected:', testEventCode);
+      } else {
+        console.log('🏭 PageView - Production mode');
+      }
+      
       // Fire Facebook Pixel PageView event
       (window as any).fbq('track', 'PageView', {}, { eventID: eventId });
-      
+
       // Send to Meta Conversions API with proper format
       const eventData = {
         event_name: 'PageView',
@@ -78,10 +87,10 @@ const trackAcademyPageView = async () => {
         original_event_data: {
           event_name: 'PageView',
           event_time: Math.floor(Date.now() / 1000)
-        }
-      };
-
-      const response = await fetch('/api/meta-conversion', {
+        },
+        // Include test event code if detected
+        ...(testEventCode && { test_event_code: testEventCode }),
+      };      const response = await fetch('/api/meta-conversion', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

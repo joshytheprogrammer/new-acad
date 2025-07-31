@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { checkoutDataStore } from '@/lib/checkoutDataStore';
-import { generateEventId } from '@/lib/metaHelpers';
+import { generateEventId, getTestEventCode } from '@/lib/metaHelpers';
 
 export async function POST(request: NextRequest) {
   try {
@@ -157,6 +157,44 @@ export async function POST(request: NextRequest) {
             sourceUrl: finalSourceUrl
           });
 
+          // Determine test event code for Purchase event
+          let testEventCode: string | undefined = undefined;
+          
+          // 1. Check source URL for test parameters
+          if (finalSourceUrl) {
+            const detectedTestCode = getTestEventCode(finalSourceUrl);
+            if (detectedTestCode) {
+              testEventCode = detectedTestCode;
+              console.log('🧪 Using test event code from source URL for Purchase:', testEventCode);
+            }
+          }
+          
+          // 2. Check referer header
+          if (!testEventCode) {
+            const refererUrl = request.headers.get('referer') || '';
+            if (refererUrl) {
+              const detectedTestCode = getTestEventCode(refererUrl);
+              if (detectedTestCode) {
+                testEventCode = detectedTestCode;
+                console.log('🧪 Using test event code from referer for Purchase:', testEventCode);
+              }
+            }
+          }
+          
+          // Log Purchase event test mode status
+          if (testEventCode) {
+            console.log('🧪 PURCHASE EVENT - META TEST MODE ENABLED:', {
+              testEventCode,
+              reference: transaction.reference,
+              amount: transaction.amount / 100
+            });
+          } else {
+            console.log('🏭 PURCHASE EVENT - META PRODUCTION MODE:', {
+              reference: transaction.reference,
+              amount: transaction.amount / 100
+            });
+          }
+
           // Generate unique event ID for Purchase event
           const purchaseEventId = generateEventId();
           
@@ -174,7 +212,9 @@ export async function POST(request: NextRequest) {
             original_event_data: {
               event_name: 'Purchase',
               event_time: Math.floor(Date.now() / 1000)
-            }
+            },
+            // Include test event code if in test mode
+            ...(testEventCode && { test_event_code: testEventCode }),
           };
 
           // Send to meta-conversion endpoint
@@ -205,7 +245,8 @@ export async function POST(request: NextRequest) {
                   event_name: 'Purchase',
                   event_id: conversionData.event_id,
                   event_time: conversionData.event_time,
-                  test_event_code: 'TEST62071',
+                  // Include test event code in logging if present
+                  ...(testEventCode && { test_event_code: testEventCode }),
                   user_data: userData,
                   custom_data: conversionData.custom_data,
                   event_source_url: finalSourceUrl,
@@ -217,7 +258,8 @@ export async function POST(request: NextRequest) {
                       status: transaction.status,
                       paid_at: transaction.paid_at,
                       customer: transaction.customer,
-                    }
+                    },
+                    test_mode: !!testEventCode
                   }
                 }),
               });

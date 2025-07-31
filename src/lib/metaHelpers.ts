@@ -50,6 +50,41 @@ export function getFbc(): string | null {
 }
 
 /**
+ * Gets the test event code from URL parameters
+ * Only checks for explicit test_event_code parameter
+ */
+export function getTestEventCode(url?: string): string | null {
+  if (typeof window === 'undefined' && !url) return null;
+  
+  try {
+    const urlToCheck = url || (typeof window !== 'undefined' ? window.location.href : '');
+    if (!urlToCheck) return null;
+    
+    const urlObj = new URL(urlToCheck);
+    const searchParams = urlObj.searchParams;
+    
+    // Check for explicit test event code only
+    const testEventCode = searchParams.get('test_event_code');
+    if (testEventCode) {
+      console.log('🧪 Test event code detected from URL:', testEventCode);
+      return testEventCode;
+    }
+    
+    return null;
+  } catch (error) {
+    console.warn('⚠️ Error parsing URL for test event code:', error);
+    return null;
+  }
+}
+
+/**
+ * Checks if we're in test mode (client-side)
+ */
+export function isTestMode(): boolean {
+  return getTestEventCode() !== null;
+}
+
+/**
  * Generates Facebook click ID (fbc) from fbclid URL parameter
  * Format: fb.1.{timestamp}.{fbclid}
  */

@@ -10,6 +10,7 @@ import {
   getClientIp, 
   trackPixelEvent,
   getAttributionData,
+  getTestEventCode,
   type LeadData 
 } from "@/lib/metaHelpers";
 
@@ -206,6 +207,15 @@ export default function EnhancedEnrollmentForm({
         // Generate unique event ID for ViewContent
         const viewContentEventId = generateEventId();
         
+        // Check for test mode
+        const testEventCode = getTestEventCode();
+        
+        if (testEventCode) {
+          console.log('🧪 ViewContent - Test mode detected:', testEventCode);
+        } else {
+          console.log('🏭 ViewContent - Production mode');
+        }
+        
         // Fire ViewContent event when user proceeds to payment section
         // 1. Frontend Pixel Event
         trackPixelEvent('ViewContent', {
@@ -269,7 +279,9 @@ export default function EnhancedEnrollmentForm({
             original_event_data: {
               event_name: 'ViewContent',
               event_time: Math.floor(Date.now() / 1000)
-            }
+            },
+            // Include test event code if detected
+            ...(testEventCode && { test_event_code: testEventCode }),
           };
 
           // Send to our meta-conversion endpoint (credentials will be handled server-side)

@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { getAttributionData, getBrowserData, generateEventId } from "@/lib/metaHelpers";
+import { getAttributionData, getBrowserData, generateEventId, getTestEventCode } from "@/lib/metaHelpers";
 
 // Helper function to hash data using Web Crypto API
 const hashData = async (data: string): Promise<string> => {
@@ -59,6 +59,15 @@ export default function Contact() {
             // Get browser data (includes proper fbc handling)
             const browserData = getBrowserData();
             
+            // Check for test mode
+            const testEventCode = getTestEventCode();
+            
+            if (testEventCode) {
+              console.log('🧪 Contact - Test mode detected:', testEventCode);
+            } else {
+              console.log('🏭 Contact - Production mode');
+            }
+            
             // Hash PII data for Meta API compliance
             const hashedEmail = await hashData(formData.email);
             const hashedPhone = await hashData(formData.phone);
@@ -97,7 +106,9 @@ export default function Contact() {
                 original_event_data: {
                     event_name: 'Contact',
                     event_time: Math.floor(Date.now() / 1000)
-                }
+                },
+                // Include test event code if detected
+                ...(testEventCode && { test_event_code: testEventCode }),
             };
 
             // Send to Meta Conversions API

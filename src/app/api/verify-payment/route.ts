@@ -205,7 +205,7 @@ export async function POST(request: NextRequest) {
                   event_name: 'Purchase',
                   event_id: conversionData.event_id,
                   event_time: conversionData.event_time,
-                  test_event_code: 'TEST56480',
+                  test_event_code: 'TEST62071',
                   user_data: userData,
                   custom_data: conversionData.custom_data,
                   event_source_url: finalSourceUrl,

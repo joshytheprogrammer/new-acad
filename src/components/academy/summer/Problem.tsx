@@ -37,7 +37,7 @@ export default function Problem() {
             </div>
             {/* Card 2 */}
             <div className="rounded-xl bg-[#7c5dfa] p-5 flex flex-col relative overflow-hidden">
-              <div className="flex-shrink-0 w-10 h-10 /70 rounded-full flex items-center justify-center text-[#7c5dfa] text-2xl">
+              <div className="flex-shrink-0 w-10 h-10 /70 rounded-full flex items-center justify-center text-[#e6e6fa] text-2xl">
                 <HourglassIcon className="w-6 h-6" />
               </div>
               <div>

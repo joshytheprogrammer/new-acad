@@ -386,13 +386,6 @@ export default function EnhancedEnrollmentForm({
         eventSourceUrl: verifyPayload.eventSourceUrl
       });
       
-      console.log('🎯 EVENT ID TRACING - Form to Payment Verification:', {
-        formCurrentEventId: currentEventId,
-        paymentReferenceEventId: (reference as any).eventId,
-        verifyPayloadEventId: verifyPayload.eventId,
-        allMatch: currentEventId === (reference as any).eventId && currentEventId === verifyPayload.eventId
-      });
-      
       // Verify payment with our backend, including original user data
       const verifyResponse = await fetch('/api/verify-payment', {
         method: 'POST',

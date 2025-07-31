@@ -215,13 +215,6 @@ export async function POST(request: NextRequest) {
           // Use the SAME event ID from InitiateCheckout for Purchase event (for proper deduplication)
           const purchaseEventId = eventId; // Reuse the InitiateCheckout event ID
           
-          console.log('🎯 EVENT ID TRACING - Verify Payment:', {
-            originalEventId: eventId,
-            purchaseEventId: purchaseEventId,
-            eventIdsMatch: eventId === purchaseEventId,
-            transactionReference: transaction.reference
-          });
-          
           const conversionData = {
             event_name: 'Purchase',
             event_time: Math.floor(Date.now() / 1000),

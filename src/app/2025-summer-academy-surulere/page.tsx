@@ -11,6 +11,7 @@ import Enrollment from "@/components/academy/summer/Enrollment";
 import FAQ from "@/components/academy/summer/FAQ";
 import Contact from "@/components/academy/summer/Contact";
 import { getAttributionData, getBrowserData, generateEventId } from "@/lib/metaHelpers";
+import { Star } from 'lucide-react';
 
 // Get client IP address (prioritizes IPv6)
 const getClientIp = async (): Promise<string> => {
@@ -148,16 +149,14 @@ export default function Page() {
           alt=""
         />
       </noscript>
-    <div className="text-white space-y-4">
+    <div className="space-y-2 md:space-y-4 px-4 bg-slate-50">
       {/* Floating Urgency Bar */}
-      <div className="fixed top-0 left-0 w-full text-white bg-red-500 text-center p-2 z-50 text-sm md:text-base !rounded-none">
-        <span className="font-semibold uppercase tracking-wider">
-          Offer Ends August 5th!
-        </span>
-        <span className="font-bold mx-2 hidden md:inline-block">|</span>
-        <span className="hidden md:inline-block">
-          LESS THAN 30 SLOTS LEFT (SURULERE)!
-        </span>
+      <div className="fixed top-0 left-0 w-full text-white font-semibold bg-gradient-to-r from-[#FF4671] to-[#FFBC33] text-center p-3 z-50 lg:text-lg !rounded-none flex items-center justify-center gap-4">
+        <Star className="w-5 h-5 text-white" fill="currentColor" />
+        <span className="text-lg">OFFER ENDS AUGUST 5TH!</span>
+        <span> | </span>
+        <span>LESS THAN 30 SLOTS LEFT (SURULERE)!</span>
+        <Star className="w-5 h-5 text-white" fill="currentColor" />
       </div>
 
       <Hero />

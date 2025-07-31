@@ -164,7 +164,7 @@ export async function POST(request: NextRequest) {
           original_event_data: eventData.original_event_data,
         }
       ],
-      // test_event_code: 'TEST56480',
+      test_event_code: 'TEST56480',
     };
 
     console.log('📊 Meta conversion received user_data:', {

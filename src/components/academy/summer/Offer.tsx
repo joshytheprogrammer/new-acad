@@ -106,7 +106,7 @@ export default function Offer() {
             </div>
 
             <div className="mt-12">
-                <Link href="/2025-summer-academy-surulere/checkout" className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-bold py-4 px-8 rounded-full text-lg shadow-lg hover:scale-105 transition-transform">
+                <Link href="#enroll" className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-bold py-4 px-8 rounded-full text-lg shadow-lg hover:scale-105 transition-transform">
                     Secure Your Child&apos;s Spot
                     <ArrowRight size={20} />
                 </Link>

@@ -9,7 +9,16 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { eventId, paymentReference } = body;
 
+    console.log('📨 Purchase event request received:', {
+      hasEventId: !!eventId,
+      hasPaymentReference: !!paymentReference,
+      eventId: eventId || 'MISSING',
+      paymentReference: paymentReference || 'MISSING',
+      bodyKeys: Object.keys(body)
+    });
+
     if (!eventId) {
+      console.error('❌ Missing eventId in request');
       return NextResponse.json(
         { success: false, error: 'Event ID is required' },
         { status: 400 }
@@ -17,6 +26,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (!paymentReference) {
+      console.error('❌ Missing paymentReference in request');
       return NextResponse.json(
         { success: false, error: 'Payment reference is required' },
         { status: 400 }
@@ -24,11 +34,65 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if this payment has been processed to prevent duplicates
-    if (!isPaymentProcessed(paymentReference)) {
-      return NextResponse.json(
-        { success: false, error: 'Payment not found or not verified' },
-        { status: 400 }
-      );
+    const paymentProcessed = isPaymentProcessed(paymentReference);
+    console.log('💳 Payment processing status:', {
+      paymentReference,
+      isProcessed: paymentProcessed,
+      allProcessedPayments: require('@/lib/paymentDeduplication').getProcessedPaymentsStats()
+    });
+    
+    if (!paymentProcessed) {
+      console.error('❌ Payment not found or not verified:', paymentReference);
+      console.error('💡 This means verify-payment API was not called yet or failed to mark payment as processed');
+      console.log('🔄 Attempting direct Paystack verification as fallback...');
+      
+      // Fallback: Try to verify directly with Paystack
+      try {
+        const directVerifyResponse = await fetch(
+          `https://api.paystack.co/transaction/verify/${paymentReference}`,
+          {
+            headers: {
+              Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
+              'Content-Type': 'application/json',
+            },
+          }
+        );
+
+        const directVerificationData = await directVerifyResponse.json();
+
+        if (directVerifyResponse.ok && directVerificationData.data?.status === 'success') {
+          console.log('✅ Direct Paystack verification successful, proceeding with Purchase event');
+          // Mark as processed now
+          require('@/lib/paymentDeduplication').markPaymentAsProcessed(paymentReference);
+        } else {
+          console.error('❌ Direct Paystack verification also failed');
+          return NextResponse.json(
+            { 
+              success: false, 
+              error: 'Payment verification failed even with direct Paystack check',
+              debug: {
+                paymentReference,
+                directVerificationResult: directVerificationData
+              }
+            },
+            { status: 400 }
+          );
+        }
+      } catch (directVerifyError) {
+        console.error('❌ Error during direct Paystack verification:', directVerifyError);
+        return NextResponse.json(
+          { 
+            success: false, 
+            error: 'Payment not found or not verified. Please ensure payment verification completed successfully.',
+            debug: {
+              paymentReference,
+              processedPayments: require('@/lib/paymentDeduplication').getProcessedPaymentsStats(),
+              directVerifyError: directVerifyError instanceof Error ? directVerifyError.message : 'Unknown error'
+            }
+          },
+          { status: 400 }
+        );
+      }
     }
 
     // Verify payment with Paystack to get transaction details

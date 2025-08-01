@@ -367,6 +367,14 @@ export default function EnhancedEnrollmentForm({
       // Show loading state
       toast.loading("Verifying payment...");
       
+      console.log('💳 Payment success callback received:', {
+        reference: reference.reference,
+        status: reference.status,
+        hasEventId: !!(reference as any).eventId,
+        eventId: (reference as any).eventId || 'MISSING',
+        currentEventIdFromForm: currentEventId
+      });
+      
       const verifyPayload = {
         reference: reference.reference,
         eventId: (reference as any).eventId || currentEventId,
@@ -410,7 +418,9 @@ export default function EnhancedEnrollmentForm({
         }
         
         // Redirect to success page with event ID for deduplication
-        window.location.href = `/2025-summer-academy-surulere/success?event_id=${currentEventId}&ref=${reference.reference}`;
+        const redirectUrl = `/2025-summer-academy-surulere/success?event_id=${currentEventId}&ref=${reference.reference}`;
+        console.log('🔄 Redirecting to success page:', redirectUrl);
+        window.location.href = redirectUrl;
       } else {
         toast.dismiss();
         toast.error("Payment verification failed. Please contact support.");

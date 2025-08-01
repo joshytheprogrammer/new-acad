@@ -20,19 +20,35 @@ function SuccessContent() {
       const sendPurchaseEvent = async () => {
         try {
           console.log('🔄 Sending Purchase event to Meta from success page');
+          console.log('📊 Request data:', {
+            eventId,
+            paymentReference: paymentRef,
+            eventIdType: typeof eventId,
+            paymentRefType: typeof paymentRef
+          });
+          
+          const requestBody = {
+            eventId,
+            paymentReference: paymentRef,
+          };
+          
+          console.log('📨 Full request body:', requestBody);
           
           const response = await fetch('/api/send-purchase-event', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify({
-              eventId,
-              paymentReference: paymentRef,
-            }),
+            body: JSON.stringify(requestBody),
           });
 
           const result = await response.json();
+          
+          console.log('📈 Purchase event response:', {
+            status: response.status,
+            ok: response.ok,
+            result: result
+          });
           
           if (response.ok) {
             console.log('✅ Purchase event sent successfully:', result);

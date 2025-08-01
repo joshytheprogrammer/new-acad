@@ -412,8 +412,9 @@ export default function EnhancedEnrollmentForm({
           onSuccess(reference);
         }
         
-        // Redirect to success page with event ID for deduplication
-        window.location.href = `/2025-summer-academy-surulere/success?event_id=${currentEventId}&ref=${reference.reference}`;
+        // Redirect to success view on same page with event ID for deduplication
+        // This ensures consistent event_source_url for Meta tracking on Netlify edge
+        window.location.href = `/2025-summer-academy-surulere?success=true&event_id=${currentEventId}&ref=${reference.reference}`;
       } else {
         toast.dismiss();
         toast.error("Payment verification failed. Please contact support.");

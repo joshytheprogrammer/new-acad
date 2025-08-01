@@ -444,7 +444,7 @@ export default function Contact() {
                                             </div>
                                         <h4 className="font-semibold text-gray-900 mb-2">Office</h4>
                                         <p className="text-sm text-gray-600">
-                                            33 Adebola Street, Masha Surulere, off Ogunlana Drive, Lagos.
+                                            33 Adegoke Street, Masha Surulere, off Ogunlana Drive, Lagos.
                                         </p>
                                     </div>
 

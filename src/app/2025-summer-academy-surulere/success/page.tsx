@@ -9,11 +9,52 @@ import { trackPixelEvent } from "@/lib/metaHelpers";
 function SuccessContent() {
   const searchParams = useSearchParams();
   const [isTracked, setIsTracked] = useState(false);
+  const [isPurchaseEventSent, setIsPurchaseEventSent] = useState(false);
   
   const eventId = searchParams.get('event_id');
   const paymentRef = searchParams.get('ref');
 
   useEffect(() => {
+    // Send Purchase event to Meta Conversions API (server-side)
+    if (eventId && paymentRef && !isPurchaseEventSent) {
+      const sendPurchaseEvent = async () => {
+        try {
+          console.log('🔄 Sending Purchase event to Meta from success page');
+          
+          const response = await fetch('/api/send-purchase-event', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              eventId,
+              paymentReference: paymentRef,
+            }),
+          });
+
+          const result = await response.json();
+          
+          if (response.ok) {
+            console.log('✅ Purchase event sent successfully:', result);
+            setIsPurchaseEventSent(true);
+            
+            // Clean up sessionStorage backup data after successful Purchase event
+            if (typeof window !== 'undefined') {
+              const backupKey = `checkout_${eventId}`;
+              sessionStorage.removeItem(backupKey);
+              console.log('🗑️ Cleaned up backup data from sessionStorage after Purchase event');
+            }
+          } else {
+            console.error('❌ Failed to send Purchase event:', result);
+          }
+        } catch (error) {
+          console.error('❌ Error sending Purchase event:', error);
+        }
+      };
+
+      sendPurchaseEvent();
+    }
+
     // Fire deduplicated Purchase pixel event for frontend tracking
     if (eventId && !isTracked) {
       trackPixelEvent('Purchase', {
@@ -27,7 +68,7 @@ function SuccessContent() {
       
       setIsTracked(true);
     }
-  }, [eventId, isTracked]);
+  }, [eventId, paymentRef, isTracked, isPurchaseEventSent]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 flex items-center justify-center p-4">

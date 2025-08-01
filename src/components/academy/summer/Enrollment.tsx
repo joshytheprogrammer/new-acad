@@ -34,7 +34,7 @@ export default function Enrollment() {
   };
     
     return (
-        <section className="bg-sand-black py-20 px-4 relative overflow-hidden">
+        <section className="bg-sand-purple py-20 px-4 relative overflow-hidden">
                 {/* Background Pattern */}
                 <div className="absolute inset-0 opacity-10">
                   <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-transparent via-white to-transparent transform rotate-12 scale-150"></div>

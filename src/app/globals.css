@@ -145,6 +145,10 @@ section {
   @apply bg-[url('/images/black-sandy-bg.webp')] bg-gray-950/95;
 }
 
+@utility bg-sand-purple {
+  @apply bg-[url('/images/black-sandy-bg.webp')] bg-purple-700/95;
+}
+
 .your-slice {
   width: 4rem;
   height: 4rem;

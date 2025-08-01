@@ -141,12 +141,12 @@ const PaystackButton: React.FC<PaystackButtonProps> = ({
 
     // Fire InitiateCheckout event when user clicks "ENROLL NOW" (only once)
     if (leadData) { // User data is required
-      // Generate unique event ID for InitiateCheckout
-      const initiateCheckoutEventId = generateEventId();
+      // Use the existing event ID from leadData (from form submission) instead of generating a new one
+      const initiateCheckoutEventId = leadData.eventId;
       
-      console.log('🎯 Generated unique eventId for InitiateCheckout:', {
+      console.log('🎯 Using existing eventId for InitiateCheckout:', {
         eventId: initiateCheckoutEventId,
-        source: 'generated for InitiateCheckout'
+        source: 'from leadData (form submission)'
       });
       
       // Mark as initiated to prevent duplicates
@@ -192,7 +192,7 @@ const PaystackButton: React.FC<PaystackButtonProps> = ({
           event_name: 'InitiateCheckout',
           event_time: Math.floor(Date.now() / 1000),
           action_source: 'website',
-          event_id: initiateCheckoutEventId, // Use the unique InitiateCheckout event ID
+          event_id: initiateCheckoutEventId, // Use the same event ID from form
           event_source_url: leadData.sourceUrl,
           user_data: {
             em: [hashedEmail],
@@ -222,7 +222,7 @@ const PaystackButton: React.FC<PaystackButtonProps> = ({
         // Store the checkout data in in-memory store for Purchase event
         try {
           const storePayload = {
-            eventId: initiateCheckoutEventId, // Use the unique InitiateCheckout event ID
+            eventId: initiateCheckoutEventId, // Use the same event ID from form
             userData: conversionData.user_data,
             sourceUrl: leadData.sourceUrl,
             leadInfo: {
@@ -256,7 +256,7 @@ const PaystackButton: React.FC<PaystackButtonProps> = ({
 
         // Legacy state storage (keeping for compatibility)
         setStoredUserData(conversionData.user_data);
-        setStoredEventId(initiateCheckoutEventId); // Store the InitiateCheckout event ID
+        setStoredEventId(initiateCheckoutEventId); // Store the same event ID from form
         setStoredSourceUrl(leadData.sourceUrl);
         
         console.log('💾 Stored user data for payment verification:', {
@@ -284,7 +284,7 @@ const PaystackButton: React.FC<PaystackButtonProps> = ({
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
                 event_name: 'InitiateCheckout',
-                event_id: initiateCheckoutEventId, // Use the unique InitiateCheckout event ID
+                event_id: initiateCheckoutEventId, // Use the same event ID from form
                 event_time: Math.floor(Date.now() / 1000),
                 user_data: {
                   em: [hashedEmail],

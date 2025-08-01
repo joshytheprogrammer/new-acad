@@ -55,17 +55,30 @@ export async function POST(request: NextRequest) {
 
     // Try to retrieve the original InitiateCheckout data from in-memory store
     console.log('🔍 Retrieving InitiateCheckout data from memory for eventId:', eventId);
+    console.log('🔍 Current store stats:', checkoutDataStore.getStats());
     const checkoutData = checkoutDataStore.get(eventId);
     
     let userData: any = null;
     let sourceUrl = null;
     
     if (checkoutData) {
-      console.log('✅ Found original InitiateCheckout data in memory');
+      console.log('✅ Found original InitiateCheckout data in memory:', {
+        eventId,
+        email: checkoutData.leadInfo?.email,
+        phone: checkoutData.leadInfo?.phone,
+        name: checkoutData.leadInfo?.name,
+        hasFbp: !!checkoutData.leadInfo?.fbp,
+        hasFbc: !!checkoutData.leadInfo?.fbc,
+        hasUserAgent: !!checkoutData.leadInfo?.userAgent,
+        hasClientIp: !!checkoutData.leadInfo?.clientIp,
+        userDataFields: Object.keys(checkoutData.userData || {})
+      });
       userData = checkoutData.userData;
       sourceUrl = checkoutData.sourceUrl;
+      console.log('✅ Using EXACT InitiateCheckout user data for Purchase event');
     } else {
-      console.warn('⚠️ No InitiateCheckout data found in memory, falling back to Paystack customer data');
+      console.warn('⚠️ No InitiateCheckout data found in memory for eventId:', eventId);
+      console.warn('📊 Available eventIds in store:', checkoutDataStore.getStats().entries);
       
       // Fallback to Paystack customer data
       const customer = transaction.customer || {};
@@ -73,6 +86,13 @@ export async function POST(request: NextRequest) {
       const customerPhone = customer.phone || '';
       const customerName = customer.first_name || customer.last_name ? 
         `${customer.first_name || ''} ${customer.last_name || ''}`.trim() : '';
+
+      console.log('🔄 Creating fallback user data from Paystack customer:', {
+        hasEmail: !!customerEmail,
+        hasPhone: !!customerPhone,
+        hasName: !!customerName,
+        customer: customer
+      });
 
       userData = {} as any;
 
@@ -102,6 +122,8 @@ export async function POST(request: NextRequest) {
       }
 
       sourceUrl = `${request.nextUrl.origin}/2025-summer-academy-surulere`;
+      
+      console.warn('⚠️ Using fallback Paystack data - Purchase event will have limited user data (missing fbp, fbc, user_agent)');
     }
 
     // Only proceed if we have user data

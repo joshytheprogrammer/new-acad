@@ -33,7 +33,9 @@ export default function Solution() {
             <h3 className="font-bebas text-2xl md:text-3xl font-bold text-white mb-2">Web Development Track</h3>
             <p className="text-white/90 mb-6">Your child will learn to build websites and web applications from scratch, mastering the fundamentals of HTML, CSS, and JavaScript.</p>
             {/* White Rectangle */}
-            <div className="bg-white rounded-lg h-24 w-full mb-6"></div>
+            <div className="bg-white rounded-lg h-50 w-full mb-6">
+              <Image src="/images/html.jpg" alt="HTML" width={200} height={200} className="w-full h-full object-cover rounded-lg" />
+            </div>
             {/* Tech Icons */}
             <div className="flex justify-center gap-6 mt-auto w-full">
               <span className="inline-block">
@@ -56,7 +58,9 @@ export default function Solution() {
             <h3 className="font-bebas text-2xl md:text-3xl font-bold text-[#2d2d2d] mb-2">Graphic Design Track</h3>
             <p className="text-[#2d2d2d]/90 mb-6">Your child will explore the principles of design, learning to create stunning visuals with industry-standard tools like Adobe Photoshop and Illustrator.</p>
             {/* White Rectangle */}
-            <div className="bg-white rounded-lg h-24 w-full mb-6"></div>
+             <div className="bg-white rounded-lg h-50 w-full mb-6">
+              <Image src="/images/ps.jpg" alt="HTML" width={200} height={200} className="w-full h-full object-cover rounded-lg" />
+            </div>
             {/* Tool Icons */}
             <div className="flex justify-center gap-6 w-full mt-auto">
               <span className="inline-block">

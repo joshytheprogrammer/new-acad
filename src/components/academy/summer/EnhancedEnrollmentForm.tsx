@@ -48,7 +48,8 @@ export default function EnhancedEnrollmentForm({
   const [formData, setFormData] = useState({
     email: "",
     name: "",
-    phone: ""
+    phone: "",
+    preferredTrack: "Web Development"
   });
   const [isFormValid, setIsFormValid] = useState(false);
   const [showPayment, setShowPayment] = useState(false);

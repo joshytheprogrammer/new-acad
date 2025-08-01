@@ -419,7 +419,7 @@ const PaystackButton: React.FC<PaystackButtonProps> = ({
     <button
       onClick={handleClick}
       disabled={disabled || !isReady || isProcessing}
-      className={`font-bold py-4 px-8 rounded-lg text-xl transition-all duration-300 ${
+      className={`font-bold py-4 px-8 rounded-lg text-xl transition-all duration-300 w-full ${
         disabled || !isReady || isProcessing
           ? 'bg-gray-400 text-gray-200 opacity-75 cursor-not-allowed'
           : 'bg-chambray-700 hover:bg-chambray-800 text-white cursor-pointer hover:scale-105'

@@ -451,13 +451,17 @@ export default function Contact() {
                                     {/* Email */}
                                     <div className="bg-white p-4">
                                         <div className="mb-4">
-                                                <Image src="/images/email.svg" alt="Office" width={32} height={32} className="size-16" />
+                                                <Image src="/images/email.svg" alt="Email" width={32} height={32} className="size-16" />
                                             </div>
                                         <h4 className="font-semibold text-gray-900 mb-2">Email</h4>
-                                        <p className="text-sm text-gray-600">
-                                            info@wandgacad.com<br />
-                                            wallsgatesacads@gmail.com
-                                        </p>
+                                        <div className="text-sm text-gray-600 space-y-1">
+                                            <a href="mailto:academy@wandggroup.com" className="block hover:text-chambray-600 transition-colors">
+                                                academy@wandggroup.com
+                                            </a>
+                                            <a href="mailto:growthdepartment@wandggroup.com" className="block hover:text-chambray-600 transition-colors">
+                                                growthdepartment@wandggroup.com
+                                            </a>
+                                        </div>
                                     </div>
 
                                     {/* Working Hours */}
@@ -475,13 +479,17 @@ export default function Contact() {
                                     {/* Office Address */}
                                     <div className="bg-white p-4">
                                         <div className="mb-4">
-                                                <Image src="/images/address.svg" alt="Office" width={32} height={32} className="size-16" />
+                                                <Image src="/images/address.svg" alt="Phone" width={32} height={32} className="size-16" />
                                             </div>
-                                        <h4 className="font-semibold text-gray-900 mb-2">Office Address</h4>
-                                        <p className="text-sm text-gray-600">
-                                            +234 803 409 9844 <br />
-                                            +234 907 938 6364
-                                        </p>
+                                        <h4 className="font-semibold text-gray-900 mb-2">Phone Numbers</h4>
+                                        <div className="text-sm text-gray-600 space-y-1">
+                                            <a href="tel:+2348081787841" className="block hover:text-chambray-600 transition-colors">
+                                                +234 808 178 7841
+                                            </a>
+                                            <a href="tel:+2349051550517" className="block hover:text-chambray-600 transition-colors">
+                                                +234 90 5155 0517
+                                            </a>
+                                        </div>
                                     </div>
                                 </div>
 

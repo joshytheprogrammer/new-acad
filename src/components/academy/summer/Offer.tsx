@@ -87,22 +87,11 @@ export default function Offer() {
         </div>
 
         <div className="mt-8 bg-sand-black text-center border border-gray-700 rounded-3xl p-8 md:p-12 relative">
-            <div className="absolute -top-8 left-1/2 -translate-x-1/2">
-                <div className="w-16 h-16 bg-red-500 rounded-full flex items-center justify-center animate-pulse">
-                    <span className="text-5xl">💥</span>
-                </div>
-            </div>
-             <div className="absolute -top-8 right-10">
-                <div className="w-16 h-16 bg-red-500 rounded-full flex items-center justify-center animate-pulse">
-                    <span className="text-5xl">💥</span>
-                </div>
-            </div>
-
             <p className="text-3xl md:text-4xl text-white">All can be yours for Just</p>
             
             <div className="my-6">
                 <div className="inline-block bg-gradient-to-r from-green-400 to-teal-400 rounded-2xl px-12 py-4 shadow-lg">
-                    <p className="text-5xl md:text-7xl font-black text-white tracking-wider">₦50,000!</p>
+                    <p className="text-4xl md:text-6xl font-black text-white tracking-wider">₦50,000!</p>
                 </div>
             </div>
 

@@ -59,7 +59,7 @@ export default function Enrollment() {
                     
 
                     <div className="flex">
-                      <div className="bg-chambray-100 rounded-2xl shadow-2xl p-8 md:p-10 w-full flex flex-col">
+                      <div className="bg-chambray-100 rounded-2xl shadow-2xl md:p-10 w-full flex flex-col">
                         <div className="text-center mb-8">
                           <div className="flex items-center justify-center mb-4">
                             <Image src="/images/lock.png" alt="Enrollment Icon" width={200} height={200} />
@@ -100,7 +100,7 @@ export default function Enrollment() {
                       </div>
                     </div>
                     <div className="flex">
-                      <div className="bg-white/10 backdrop-blur-lg rounded-2xl px-8 py-12 border border-white/20 w-full flex flex-col">
+                      <div className="bg-white/10 backdrop-blur-lg rounded-2xl px-4 py-8 lg:px-8 lg:py-12 border border-white/20 w-full flex flex-col">
                         <h3 className="font-bebas text-2xl md:text-3xl font-bold text-white mb-6">
                           What You Get Today:
                         </h3>

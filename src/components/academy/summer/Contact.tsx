@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { getAttributionData, getBrowserData, generateEventId, getTestEventCode } from "@/lib/metaHelpers";
 import Image from "next/image";
+import Link from "next/link";
 
 // Helper function to hash data using Web Crypto API
 const hashData = async (data: string): Promise<string> => {
@@ -443,9 +444,14 @@ export default function Contact() {
                                                 <Image src="/images/office.svg" alt="Office" width={32} height={32} className="size-16" />
                                             </div>
                                         <h4 className="font-semibold text-gray-900 mb-2">Office</h4>
-                                        <p className="text-sm text-gray-600">
+                                        <Link
+                                            href="https://maps.app.goo.gl/TEQDEseLxzWf4q9A8" 
+                                            target="_blank" 
+                                            rel="noopener noreferrer"
+                                            className="text-sm text-gray-600 hover:text-chambray-600 transition-colors block"
+                                        >
                                             33 Adegoke Street, Masha Surulere, off Ogunlana Drive, Lagos.
-                                        </p>
+                                        </Link>
                                     </div>
 
                                     {/* Email */}
@@ -455,12 +461,12 @@ export default function Contact() {
                                             </div>
                                         <h4 className="font-semibold text-gray-900 mb-2">Email</h4>
                                         <div className="text-sm text-gray-600 space-y-1">
-                                            <a href="mailto:academy@wandggroup.com" className="block hover:text-chambray-600 transition-colors break-all">
+                                            <Link href="mailto:academy@wandggroup.com" className="block hover:text-chambray-600 transition-colors break-all">
                                                 academy@wandggroup.com
-                                            </a>
-                                            <a href="mailto:growthdepartment@wandggroup.com" className="block hover:text-chambray-600 transition-colors break-all">
+                                            </Link>
+                                            <Link href="mailto:growthdepartment@wandggroup.com" className="block hover:text-chambray-600 transition-colors break-all">
                                                 growthdepartment@wandggroup.com
-                                            </a>
+                                            </Link>
                                         </div>
                                     </div>
 

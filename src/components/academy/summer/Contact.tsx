@@ -426,7 +426,7 @@ export default function Contact() {
                             </div>
 
                             {/* Right Side - Contact Information */}
-                            <div className="space-y-8 py-16 px-8 bg-neutal-50">
+                            <div className="space-y-8 lg:py-16 lg:px-8 bg-neutal-50">
                                 <div>
                                     <h3 className="text-2xl font-bold text-gray-900 mb-6">
                                         Prefer to Talk Directly?
@@ -455,10 +455,10 @@ export default function Contact() {
                                             </div>
                                         <h4 className="font-semibold text-gray-900 mb-2">Email</h4>
                                         <div className="text-sm text-gray-600 space-y-1">
-                                            <a href="mailto:academy@wandggroup.com" className="block hover:text-chambray-600 transition-colors">
+                                            <a href="mailto:academy@wandggroup.com" className="block hover:text-chambray-600 transition-colors break-all">
                                                 academy@wandggroup.com
                                             </a>
-                                            <a href="mailto:growthdepartment@wandggroup.com" className="block hover:text-chambray-600 transition-colors">
+                                            <a href="mailto:growthdepartment@wandggroup.com" className="block hover:text-chambray-600 transition-colors break-all">
                                                 growthdepartment@wandggroup.com
                                             </a>
                                         </div>

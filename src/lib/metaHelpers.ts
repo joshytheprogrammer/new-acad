@@ -29,11 +29,24 @@ export function generateEventId(): string {
 export function getFbp(): string | null {
   if (typeof window === 'undefined') return null;
   
-  const fbp = document.cookie
-    .split(';')
-    .find(cookie => cookie.trim().startsWith('_fbp='));
-  
-  return fbp ? fbp.split('=')[1] : null;
+  try {
+    const cookies = document.cookie.split(';');
+    console.log('🍪 All cookies:', cookies.map(c => c.trim().split('=')[0]));
+    
+    const fbpCookie = cookies.find(cookie => cookie.trim().startsWith('_fbp='));
+    
+    if (fbpCookie) {
+      const fbpValue = fbpCookie.split('=')[1];
+      console.log('✅ Found _fbp cookie:', fbpValue);
+      return fbpValue;
+    } else {
+      console.log('❌ No _fbp cookie found');
+      return null;
+    }
+  } catch (error) {
+    console.error('❌ Error reading _fbp cookie:', error);
+    return null;
+  }
 }
 
 /**
@@ -42,11 +55,22 @@ export function getFbp(): string | null {
 export function getFbc(): string | null {
   if (typeof window === 'undefined') return null;
   
-  const fbc = document.cookie
-    .split(';')
-    .find(cookie => cookie.trim().startsWith('_fbc='));
-  
-  return fbc ? fbc.split('=')[1] : null;
+  try {
+    const cookies = document.cookie.split(';');
+    const fbcCookie = cookies.find(cookie => cookie.trim().startsWith('_fbc='));
+    
+    if (fbcCookie) {
+      const fbcValue = fbcCookie.split('=')[1];
+      console.log('✅ Found _fbc cookie:', fbcValue);
+      return fbcValue;
+    } else {
+      console.log('ℹ️ No _fbc cookie found (normal if not from Facebook ad)');
+      return null;
+    }
+  } catch (error) {
+    console.error('❌ Error reading _fbc cookie:', error);
+    return null;
+  }
 }
 
 /**

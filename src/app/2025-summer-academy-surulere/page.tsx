@@ -39,12 +39,15 @@ const getClientIp = async (): Promise<string> => {
   }
 };
 
-// Track PageView for academy main page
+// Track PageView for academy main page - Conversions API only (pixel PageView fires automatically)
 const trackAcademyPageView = async () => {
-  if (typeof window !== 'undefined' && (window as any).fbq) {
+  if (typeof window !== 'undefined') {
     const eventId = generateEventId();
     
     try {
+      // Wait a bit to ensure _fbp cookie is set by the automatic pixel PageView
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
       // Get client IP
       const clientIp = await getClientIp();
       
@@ -58,15 +61,19 @@ const trackAcademyPageView = async () => {
       const testEventCode = getTestEventCode();
       
       if (testEventCode) {
-        console.log('🧪 PageView - Test mode detected:', testEventCode);
+        console.log('🧪 PageView Conversions API - Test mode detected:', testEventCode);
       } else {
-        console.log('🏭 PageView - Production mode');
+        console.log('🏭 PageView Conversions API - Production mode');
       }
       
-      // Fire Facebook Pixel PageView event
-      (window as any).fbq('track', 'PageView', {}, { eventID: eventId });
+      console.log('📊 Browser data for PageView:', {
+        hasFbp: !!browserData.fbp,
+        hasFbc: !!browserData.fbc,
+        fbpValue: browserData.fbp,
+        fbcValue: browserData.fbc
+      });
 
-      // Send to Meta Conversions API with proper format
+      // Send to Meta Conversions API with proper format (no duplicate pixel call)
       const eventData = {
         event_name: 'PageView',
         event_time: Math.floor(Date.now() / 1000),
@@ -117,10 +124,10 @@ const trackAcademyPageView = async () => {
 
 export default function Page() {
   useEffect(() => {
-    // Track PageView for the main academy page only
+    // Track PageView Conversions API after pixel has time to set cookies
     const timer = setTimeout(() => {
       trackAcademyPageView();
-    }, 2000);
+    }, 3000); // Increased to 3 seconds to allow pixel initialization and cookie setting
 
     return () => clearTimeout(timer);
   }, []);

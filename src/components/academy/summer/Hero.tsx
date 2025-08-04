@@ -31,7 +31,7 @@ export default function Hero(){
       
         useEffect(() => {
           const timer = setInterval(() => {
-            const targetDate = new Date("2025-08-05T23:59:59");
+            const targetDate = new Date("2025-08-12T23:59:59");
             const now = new Date();
             const difference = targetDate.getTime() - now.getTime();
       
@@ -73,7 +73,7 @@ export default function Hero(){
 
           <div className="text-black lg:text-xl">
               Transform Your Child&apos;s Screen Time Into Skill Time Before
-              August 5th!
+              August 12th!
           </div>
           <div>
             <button 

@@ -85,20 +85,7 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* Contact Info */}
-        <div className="flex-1 min-w-fit">
-          <h4 className="font-bold text-3xl text-gray-950 mb-3">
-            Get In Touch
-          </h4>
-          <p className="text-gray-600 text-sm mb-3">
-            Ready to join our academy? Contact us today!
-          </p>
-          <div className="space-y-2 text-gray-600 text-sm">
-            <p>📧 academy@wandggroup.com</p>
-            <p>📱 +234 808 178 7841</p>
-            <p>📍 33, Adegoke Surulere, Lagos</p>
-          </div>
-        </div>
+       
       </div>
 
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center mt-10 py-12 border-t border-gray-200 text-gray-500 text-sm gap-4 !rounded-none">
@@ -144,7 +131,7 @@ export function SmallerFooter() {
         {/* Social Links */}
         <SocialLinks />
       </div>
-      <hr className=" my-4 md:my-6 border border-gray-300/80 h-px" />
+      <hr className="border border-gray-300/80 h-px" />
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-center items-center pb-8 text-gray-500 text-sm gap-4">
         <div>Walls&Gates Academy &copy; {currentYear}. All Rights Reserved</div>
       </div>

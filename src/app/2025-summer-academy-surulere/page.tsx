@@ -147,7 +147,7 @@ export default function Page() {
       {/* Floating Urgency Bar */}
       <div className="fixed top-0 left-0 w-full text-white font-semibold bg-gradient-to-r from-[#FF4671] to-[#FFBC33] text-center p-3 z-50 lg:text-lg !rounded-none flex items-center justify-center gap-4">
         <Star className="w-5 h-5 text-white" fill="currentColor" />
-        <span className="text-lg">OFFER ENDS AUGUST 5TH!</span>
+        <span className="text-lg">OFFER ENDS AUGUST 12th!</span>
         <span className='hidden lg:inline'> | </span>
         <span className='hidden lg:inline'>LESS THAN 30 SLOTS LEFT (SURULERE)!</span>
         <Star className="w-5 h-5 text-white" fill="currentColor" />

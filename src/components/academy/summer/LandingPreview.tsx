@@ -13,7 +13,7 @@ export default function LandingPreview() {
             
               useEffect(() => {
                 const timer = setInterval(() => {
-                  const targetDate = new Date("2025-08-05T23:59:59");
+                  const targetDate = new Date("2025-08-12T23:59:59");
                   const now = new Date();
                   const difference = targetDate.getTime() - now.getTime();
             
@@ -49,7 +49,7 @@ export default function LandingPreview() {
         </h2>
         <p className="font-satoshi text-lg md:text-xl mt-4 max-w-3xl mx-auto">
           Transform unproductive screen time into future-proof digital skills
-          (Web Dev / Graphic Design) before August 5th. Secure your child&apos;s
+          (Web Dev / Graphic Design) before August 12th. Secure your child&apos;s
           spot at our 33, Adegoke Surulere location!
         </p>
         <div className="mt-8">

@@ -140,7 +140,7 @@ function SuccessContent() {
                 </div>
                 <div className="flex-1">
                   <h3 className="font-semibold text-gray-900  mb-1">
-                    Program Day - Starts August 5th, 8:00 AM
+                    Program Day - Starts August 12th, 8:00 AM
                   </h3>
                   <p className="text-gray-600  leading-relaxed">
                     Arrive 15 minutes early. Bring your child's laptop (or we'll provide one) and a notebook.

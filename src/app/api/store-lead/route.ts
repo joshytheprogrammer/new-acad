@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
       userAgent,
       clientIp,
       sourceUrl,
-      amount: 50000, // Store the amount when lead is created
+      amount: 10000, // Store the amount when lead is created
       currency: 'NGN', // Store the currency when lead is created
       status: 'PENDING',
       reference: '', // Will be filled when payment is successful

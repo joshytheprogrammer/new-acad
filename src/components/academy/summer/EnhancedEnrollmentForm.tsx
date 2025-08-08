@@ -317,7 +317,7 @@ export default function EnhancedEnrollmentForm({
                     external_id: [hashedEmail],
                   },
                   custom_data: {
-                    value: 50000,
+                    value: 10000,
                     currency: 'NGN',
                   },
                   event_source_url: leadInfo.sourceUrl,
@@ -458,7 +458,7 @@ export default function EnhancedEnrollmentForm({
         <div className="flex flex-col items-center">
           <PaystackButton
             email={leadData.email}
-            amount={50000}
+            amount={10000}
             onSuccess={handlePaystackSuccess}
             onClose={handlePaystackClose}
             disabled={false}
@@ -625,7 +625,7 @@ export default function EnhancedEnrollmentForm({
         ) : formSubmissionCount > 3 ? (
           "TOO MANY ATTEMPTS"
         ) : (
-          "PROCEED TO PAYMENT →"
+          "SECURE SPOT FOR ₦10,000"
         )}
       </button>
 

@@ -154,7 +154,7 @@ const PaystackButton: React.FC<PaystackButtonProps> = ({
       
       // 1. Frontend Pixel Event
       trackPixelEvent('InitiateCheckout', {
-        value: 50000,
+        value: 10000,
         currency: 'NGN',
         content_name: '2025 Summer Academy - Surulere',
         content_category: 'Education',
@@ -210,7 +210,7 @@ const PaystackButton: React.FC<PaystackButtonProps> = ({
             campaign_id: attributionData.campaign_id,
           },
           custom_data: {
-            value: 50000,
+            value: 10000,
             currency: 'NGN',
           },
           original_event_data: {
@@ -296,7 +296,7 @@ const PaystackButton: React.FC<PaystackButtonProps> = ({
                   fbc: leadData.fbc,
                 },
                 custom_data: {
-                  value: 50000,
+                  value: 10000,
                   currency: 'NGN',
                 },
                 event_source_url: leadData.sourceUrl,
@@ -433,7 +433,7 @@ const PaystackButton: React.FC<PaystackButtonProps> = ({
           </svg>
           Processing...
         </span>
-      ) : disabled ? 'Complete Form First' : 'ENROLL NOW - ₦50,000'}
+      ) : disabled ? 'Complete Form First' : 'SECURE SPOT NOW - ₦10,000'}
     </button>
   );
 };

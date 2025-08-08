@@ -104,7 +104,7 @@ export default function Contact() {
                 },
                 custom_data: {
                     currency: 'NGN',
-                    value: 50000
+                    value: 10000
                 },
                 original_event_data: {
                     event_name: 'Contact',
@@ -154,7 +154,7 @@ export default function Contact() {
                         },
                         custom_data: {
                             currency: 'NGN',
-                            value: 50000,
+                            value: 10000,
                         },
                         event_source_url: window.location.href,
                         meta_response: result,

@@ -156,9 +156,20 @@ export default function Enrollment() {
                         </div>
                         
                         <div className="mt-8 pt-6 border-t border-white/20 !rounded-none">
-                          <div className="flex items-center justify-between">
-                            <span className="text-chambray-200 line-through text-lg">₦300,000</span>
-                            <span className="font-bebas text-3xl md:text-4xl font-bold text-white">Now ₦50,000</span>
+                          <div className="flex items-center justify-between mb-6">
+                            <div>
+                              <div className="text-chambray-200 text-sm">Before price</div>
+                              <span className="text-chambray-200 line-through text-lg">₦300,000</span>
+                            </div>
+                            <div className="bg-green-500 rounded-sm px-4 py-4">
+                              <span className="font-bebas text-2xl md:text-3xl font-bold text-white">Now ₦50,000 Only</span>
+                            </div>
+                          </div>
+                          
+                          <div className="border-2 border-purple-500 px-6 py-4">
+                            <p className="text-white  font-bold text-center text-lg">
+                              But you can secure a spot for Just ₦10,000
+                            </p>
                           </div>
                         </div>
                       </div>

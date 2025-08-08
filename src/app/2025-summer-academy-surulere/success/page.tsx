@@ -75,7 +75,7 @@ function SuccessContent() {
     // Fire deduplicated Purchase pixel event for frontend tracking
     if (eventId && !isTracked) {
       trackPixelEvent('Purchase', {
-        value: 50000,
+        value: 10000,
         currency: 'NGN',
         content_name: '2025 Summer Academy - Surulere',
         content_category: 'Education',

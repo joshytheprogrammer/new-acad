@@ -12,6 +12,7 @@ import FAQ from "@/components/academy/summer/FAQ";
 import Contact from "@/components/academy/summer/Contact";
 import { getAttributionData, getBrowserData, generateEventId, getTestEventCode } from "@/lib/metaHelpers";
 import { Star } from 'lucide-react';
+import Referal from '@/components/academy/summer/Referal';
 
 // Get client IP address (prioritizes IPv6)
 const getClientIp = async (): Promise<string> => {
@@ -161,6 +162,7 @@ export default function Page() {
       <div id="enrollment">
         <Enrollment />
       </div>
+      <Referal />
       <Contact />
       
       {/* Ensure FAQ is included after Contact */}
